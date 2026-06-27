@@ -79,18 +79,18 @@
           <input type="file" id="input-fotos-camara" accept="image/*" capture="environment" class="visually-hidden" aria-label="Tomar foto con la cámara">
           <input type="file" id="input-fotos-galeria" accept="image/*" multiple class="visually-hidden" aria-label="Seleccionar fotos de la galería">
 
-          <!-- Botones de acción -->
+          <!-- Botones de acción: labels vinculados directamente a cada input -->
           <div class="upload-actions" id="image-upload-area">
-            <button type="button" id="btn-tomar-foto" class="upload-action-btn upload-action-btn--camera">
+            <label for="input-fotos-camara" class="upload-action-btn upload-action-btn--camera" id="btn-tomar-foto" role="button" tabindex="0">
               <span class="upload-action-icon">📷</span>
               <span class="upload-action-label">Tomar foto</span>
               <span class="upload-action-hint">Abre la cámara</span>
-            </button>
-            <button type="button" id="btn-galeria" class="upload-action-btn upload-action-btn--gallery">
+            </label>
+            <label for="input-fotos-galeria" class="upload-action-btn upload-action-btn--gallery" id="btn-galeria" role="button" tabindex="0">
               <span class="upload-action-icon">🖼️</span>
               <span class="upload-action-label">Elegir de galería</span>
               <span class="upload-action-hint">Selecciona fotos guardadas</span>
-            </button>
+            </label>
           </div>
 
           <!-- Preview de imágenes -->

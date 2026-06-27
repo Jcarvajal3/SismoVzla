@@ -11,28 +11,21 @@ const cameraState = {
 
 /**
  * Inicializa los controladores de eventos para la carga de imágenes.
- * Soporta dos flujos: cámara directa y selección de galería.
+ * Los <label> de cada botón activan su input directamente vía HTML (for="..."),
+ * lo que garantiza que capture="environment" sea respetado en móviles.
  */
 function initCamera() {
   const cameraInput  = document.getElementById('input-fotos-camara');
   const galleryInput = document.getElementById('input-fotos-galeria');
-  const cameraBtn    = document.getElementById('btn-tomar-foto');
-  const galleryBtn   = document.getElementById('btn-galeria');
   const uploadArea   = document.getElementById('image-upload-area');
 
-  if (!cameraInput || !galleryInput || !cameraBtn || !galleryBtn) return;
-
-  // Botón "Tomar foto" → dispara el input con capture="environment"
-  cameraBtn.addEventListener('click', () => cameraInput.click());
-
-  // Botón "Elegir de galería" → dispara el input sin capture (galería)
-  galleryBtn.addEventListener('click', () => galleryInput.click());
+  if (!cameraInput || !galleryInput) return;
 
   // Ambos inputs comparten el mismo manejador de selección
   cameraInput.addEventListener('change',  handleImageSelect);
   galleryInput.addEventListener('change', handleImageSelect);
 
-  // Drag & Drop sobre el área de acciones (fallback de escritorio)
+  // Drag & Drop sobre el área de acciones (útil en escritorio)
   if (uploadArea) {
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
