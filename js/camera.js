@@ -11,46 +11,46 @@ const cameraState = {
 
 /**
  * Inicializa los controladores de eventos para la carga de imágenes.
+ * Soporta dos flujos: cámara directa y selección de galería.
  */
 function initCamera() {
-  const fileInput = document.getElementById('input-fotos');
-  const uploadArea = document.getElementById('image-upload-area');
+  const cameraInput  = document.getElementById('input-fotos-camara');
+  const galleryInput = document.getElementById('input-fotos-galeria');
+  const cameraBtn    = document.getElementById('btn-tomar-foto');
+  const galleryBtn   = document.getElementById('btn-galeria');
+  const uploadArea   = document.getElementById('image-upload-area');
 
-  if (!fileInput || !uploadArea) return;
+  if (!cameraInput || !galleryInput || !cameraBtn || !galleryBtn) return;
 
-  // Sincronizar click en área con el input oculto
-  uploadArea.addEventListener('click', (e) => {
-    // Evitar bucle si se hace click en la etiqueta/input directamente
-    if (e.target.id !== 'input-fotos' && e.target.tagName !== 'LABEL') {
-      fileInput.click();
-    }
-  });
+  // Botón "Tomar foto" → dispara el input con capture="environment"
+  cameraBtn.addEventListener('click', () => cameraInput.click());
 
-  // Manejo de la selección de archivos
-  fileInput.addEventListener('change', handleImageSelect);
+  // Botón "Elegir de galería" → dispara el input sin capture (galería)
+  galleryBtn.addEventListener('click', () => galleryInput.click());
 
-  // Drag and Drop (opcional pero premium)
-  uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'var(--accent-primary)';
-    uploadArea.style.backgroundColor = 'rgba(240, 136, 62, 0.04)';
-  });
+  // Ambos inputs comparten el mismo manejador de selección
+  cameraInput.addEventListener('change',  handleImageSelect);
+  galleryInput.addEventListener('change', handleImageSelect);
 
-  uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = 'var(--border-color)';
-    uploadArea.style.backgroundColor = 'rgba(22, 32, 53, 0.2)';
-  });
+  // Drag & Drop sobre el área de acciones (fallback de escritorio)
+  if (uploadArea) {
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
 
-  uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'var(--border-color)';
-    uploadArea.style.backgroundColor = 'rgba(22, 32, 53, 0.2)';
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      fileInput.files = e.dataTransfer.files;
-      handleImageSelect({ target: fileInput });
-    }
-  });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleImageSelect({ target: { files: e.dataTransfer.files, value: '' } });
+      }
+    });
+  }
 }
 
 /**
@@ -98,7 +98,9 @@ async function handleImageSelect(event) {
   }
 
   // Limpiar valor del input para permitir volver a seleccionar el mismo archivo
-  event.target.value = '';
+  if (event.target && 'value' in event.target) {
+    event.target.value = '';
+  }
 
   // Actualizar la interfaz
   renderPreviews();

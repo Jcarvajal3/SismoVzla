@@ -73,15 +73,24 @@
         <!-- Paso 1: Fotos -->
         <div class="form-step" id="step-fotos">
           <h2>📸 Paso 1: Fotos del daño</h2>
-          <p class="form-help">Toma o selecciona hasta 4 fotos del daño. Intenta capturar grietas, columnas y vigas afectadas desde diferentes ángulos (1–2 metros de distancia).</p>
+          <p class="form-help">Toma hasta 4 fotos del daño. Intenta capturar grietas, columnas y vigas afectadas desde diferentes ángulos (1–2 metros de distancia).</p>
 
-          <div class="image-upload-area" id="image-upload-area">
-            <input type="file" id="input-fotos" accept="image/*" capture="environment" multiple class="visually-hidden">
-            <label for="input-fotos" class="upload-label" id="upload-label">
-              <span class="upload-icon">📷</span>
-              <span class="upload-text">Tomar foto o seleccionar de galería</span>
-              <span class="upload-hint">Máximo 4 fotos · JPG, PNG, WebP</span>
-            </label>
+          <!-- Inputs ocultos: uno para cámara, uno para galería -->
+          <input type="file" id="input-fotos-camara" accept="image/*" capture="environment" class="visually-hidden" aria-label="Tomar foto con la cámara">
+          <input type="file" id="input-fotos-galeria" accept="image/*" multiple class="visually-hidden" aria-label="Seleccionar fotos de la galería">
+
+          <!-- Botones de acción -->
+          <div class="upload-actions" id="image-upload-area">
+            <button type="button" id="btn-tomar-foto" class="upload-action-btn upload-action-btn--camera">
+              <span class="upload-action-icon">📷</span>
+              <span class="upload-action-label">Tomar foto</span>
+              <span class="upload-action-hint">Abre la cámara</span>
+            </button>
+            <button type="button" id="btn-galeria" class="upload-action-btn upload-action-btn--gallery">
+              <span class="upload-action-icon">🖼️</span>
+              <span class="upload-action-label">Elegir de galería</span>
+              <span class="upload-action-hint">Selecciona fotos guardadas</span>
+            </button>
           </div>
 
           <!-- Preview de imágenes -->
@@ -89,9 +98,9 @@
           <p id="compression-info" class="compression-info" hidden></p>
         </div>
 
-        <!-- Paso 2: Ubicación -->
+        <!-- Paso 2: Ubicación y datos del inmueble -->
         <div class="form-step" id="step-ubicacion">
-          <h2>📍 Paso 2: Ubicación del inmueble</h2>
+          <h2>🏢 Paso 2: Ubicación y datos del inmueble</h2>
 
           <button type="button" id="btn-geolocalizacion" class="btn btn-secondary" style="margin-bottom: var(--space-4);">
             📍 Detectar mi ubicación automáticamente
@@ -118,26 +127,6 @@
               <input type="text" id="input-parroquia" placeholder="Ej: El Recreo">
             </div>
             <div class="form-group">
-              <label for="input-direccion">Dirección</label>
-              <input type="text" id="input-direccion" placeholder="Ej: Av. Libertador, cruce con Calle Villaflor">
-            </div>
-            <div class="form-group full-width">
-              <label for="input-edificio">Nombre del edificio / residencia <span style="color:var(--risk-critico)">*</span></label>
-              <input type="text" id="input-edificio" placeholder="Ej: Residencias Las Palmas, Torre A" required aria-required="true">
-            </div>
-          </div>
-
-          <!-- Campos ocultos para coordenadas GPS -->
-          <input type="hidden" id="input-lat" name="latitude">
-          <input type="hidden" id="input-lng" name="longitude">
-        </div>
-
-        <!-- Paso 3: Datos del inmueble -->
-        <div class="form-step" id="step-inmueble">
-          <h2>🏢 Paso 3: Datos del inmueble</h2>
-
-          <div class="form-grid">
-            <div class="form-group">
               <label for="select-tipo">Tipo de inmueble <span style="color:var(--risk-critico)">*</span></label>
               <select id="select-tipo" required aria-required="true">
                 <option value="casa">Casa</option>
@@ -149,15 +138,19 @@
                 <option value="otro">Otro</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="input-piso">Piso donde está el daño</label>
-              <input type="number" id="input-piso" min="0" max="50" placeholder="Ej: 3">
+            <div class="form-group full-width">
+              <label for="input-edificio">Nombre del edificio / residencia <span style="color:var(--risk-critico)">*</span></label>
+              <input type="text" id="input-edificio" placeholder="Ej: Residencias Las Palmas, Torre A" required aria-required="true">
             </div>
             <div class="form-group full-width">
               <label for="textarea-descripcion">Describe el daño que observas</label>
-              <textarea id="textarea-descripcion" rows="3" placeholder="Ej: Grieta diagonal en la columna del pasillo, se escucha crujido al pisar el piso 3..."></textarea>
+              <textarea id="textarea-descripcion" rows="3" placeholder="Ej: Grieta diagonal en la columna del pasillo, se escucha crujido al caminar..."></textarea>
             </div>
           </div>
+
+          <!-- Campos ocultos para coordenadas GPS -->
+          <input type="hidden" id="input-lat" name="latitude">
+          <input type="hidden" id="input-lng" name="longitude">
         </div>
 
         <!-- Botón de envío -->
@@ -490,11 +483,14 @@
   </main>
 
   <!-- ===== BOTÓN SOS FLOTANTE ===== -->
+  <!--
   <button id="btn-sos" class="btn-sos" aria-label="Abrir panel de emergencia SOS">
     🆘<br>SOS
   </button>
+  -->
 
   <!-- Modal SOS -->
+  <!--
   <div id="modal-sos" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="sos-title">
     <div class="modal-content card">
       <button class="modal-close" id="btn-close-sos" aria-label="Cerrar">&times;</button>
@@ -514,6 +510,7 @@
       </div>
     </div>
   </div>
+  -->
 
   <!-- Toast de notificaciones -->
   <div id="toast-container" class="toast-container" role="region" aria-live="polite" aria-label="Notificaciones"></div>

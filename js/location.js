@@ -173,10 +173,6 @@ async function handleGeolocationRequest() {
         const parroquiaEl = document.getElementById('input-parroquia');
         if (parroquiaEl) parroquiaEl.value = address.parroquia;
       }
-      if (address.direccion) {
-        const direccionEl = document.getElementById('input-direccion');
-        if (direccionEl) direccionEl.value = address.direccion;
-      }
 
       showToast('Ubicación detectada con éxito.', 'success');
       if (statusEl) {
@@ -311,7 +307,6 @@ function getLocationData() {
     estado: estadoVal,
     municipio: document.getElementById('input-municipio').value,
     parroquia: document.getElementById('input-parroquia').value,
-    direccion: document.getElementById('input-direccion').value,
     edificio: document.getElementById('input-edificio').value,
     lat: document.getElementById('input-lat').value,
     lng: document.getElementById('input-lng').value

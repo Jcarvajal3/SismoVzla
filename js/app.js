@@ -153,13 +153,12 @@ function setupFormSubmission() {
     // Recopilar datos de ubicación e inmueble
     const locationData = getLocationData();
     const tipoInmueble = document.getElementById('select-tipo').value;
-    const piso = document.getElementById('input-piso').value;
     const descripcion = document.getElementById('textarea-descripcion').value;
 
     const formData = {
       ...locationData,
       tipo: tipoInmueble,
-      piso: piso,
+      piso: null,
       descripcion: descripcion
     };
 
