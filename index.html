@@ -28,23 +28,20 @@
     <div class="header-content">
       <div class="logo">
         <svg class="flag-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 60" aria-label="Bandera de Venezuela">
-          <defs>
-            <g id="logo-star">
-              <polygon points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
-            </g>
-          </defs>
+          <!-- Franjas -->
           <rect width="90" height="20" fill="#FECB00"/>
           <rect y="20" width="90" height="20" fill="#00247D"/>
           <rect y="40" width="90" height="20" fill="#CF142B"/>
-          <g transform="translate(45, 42)">
-            <use href="#logo-star" transform="rotate(-50) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(-35.7) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(-21.4) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(-7.1) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(7.1) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(21.4) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(35.7) translate(0, -17)"/>
-            <use href="#logo-star" transform="rotate(50) translate(0, -17)"/>
+          <!-- 8 estrellas inline — sin <use> ni <defs> para compatibilidad total en prod -->
+          <g transform="translate(45,42)">
+            <polygon transform="rotate(-50) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(-35.7) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(-21.4) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(-7.1) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(7.1) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(21.4) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(35.7) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
+            <polygon transform="rotate(50) translate(0,-17)" points="0,-3 0.9,-0.9 3.1,-0.9 1.3,0.4 2,2.7 0,1.3 -2,2.7 -1.3,0.4 -3.1,-0.9 -0.9,-0.9" fill="#ffffff"/>
           </g>
         </svg>
         <span>Estructura<span class="logo-accent">Scan</span></span>
