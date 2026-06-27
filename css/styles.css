@@ -176,6 +176,15 @@ body {
   color: var(--accent-primary);
 }
 
+.flag-icon {
+  width: 27px;
+  height: 18px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
 #main-nav {
   display: flex;
   gap: var(--space-1);
