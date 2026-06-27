@@ -1,0 +1,12 @@
+{
+  "name": "estructurascan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Evaluación de daños sísmicos - Venezuela 2026",
+  "scripts": {
+    "dev": "node run-dev.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0"
+  }
+}

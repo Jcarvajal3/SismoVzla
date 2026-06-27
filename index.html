@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Evalúa los daños de tu inmueble tras el terremoto en Venezuela. Diagnóstico preliminar automatizado. Sube fotos y recibe un análisis de riesgo.">
+  <meta property="og:title" content="EstructuraScan — Evaluación de Daños">
+  <meta property="og:description" content="Diagnóstico de daños post-terremoto">
+  <meta property="og:type" content="website">
+  <title>EstructuraScan — Evaluación Sísmica</title>
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- ===== HEADER FIJO ===== -->
+  <header id="main-header">
+    <div class="header-content">
+      <div class="logo">
+        🇻🇪&nbsp;<span>Estructura<span class="logo-accent">Scan</span></span>
+      </div>
+      <nav id="main-nav" aria-label="Navegación principal">
+        <a href="#evaluar"       class="nav-link active" data-section="evaluar">Evaluar</a>
+        <!-- <a href="#mapa" class="nav-link" data-section="mapa">Mapa</a> -->
+        <!-- <a href="#especialistas" class="nav-link"         data-section="especialistas">Especialistas</a> -->
+        <a href="#info"          class="nav-link"         data-section="info">Info</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app-main">
+
+    <!-- ===== SECCIÓN: EVALUAR DAÑOS ===== -->
+    <section id="section-evaluar" class="page-section active" aria-labelledby="evaluar-heading">
+
+      <!-- Hero -->
+      <div class="hero" id="hero-evaluar">
+        <h1 id="evaluar-heading">Evalúa los daños de tu inmueble</h1>
+        <p class="hero-subtitle">Sube fotos del daño y recibe un diagnóstico preliminar en segundos</p>
+        <p class="hero-disclaimer">⚠️ Diagnóstico informativo — Se requiere inspección profesional</p>
+      </div>
+
+      <!-- Formulario de evaluación -->
+      <form id="form-evaluacion" class="card" novalidate>
+
+        <!-- Paso 1: Fotos -->
+        <div class="form-step" id="step-fotos">
+          <h2>📸 Paso 1: Fotos del daño</h2>
+          <p class="form-help">Toma o selecciona hasta 4 fotos del daño. Intenta capturar grietas, columnas y vigas afectadas desde diferentes ángulos (1–2 metros de distancia).</p>
+
+          <div class="image-upload-area" id="image-upload-area">
+            <input type="file" id="input-fotos" accept="image/*" capture="environment" multiple class="visually-hidden">
+            <label for="input-fotos" class="upload-label" id="upload-label">
+              <span class="upload-icon">📷</span>
+              <span class="upload-text">Tomar foto o seleccionar de galería</span>
+              <span class="upload-hint">Máximo 4 fotos · JPG, PNG, WebP</span>
+            </label>
+          </div>
+
+          <!-- Preview de imágenes -->
+          <div id="image-previews" class="image-previews"></div>
+          <p id="compression-info" class="compression-info" hidden></p>
+        </div>
+
+        <!-- Paso 2: Ubicación -->
+        <div class="form-step" id="step-ubicacion">
+          <h2>📍 Paso 2: Ubicación del inmueble</h2>
+
+          <button type="button" id="btn-geolocalizacion" class="btn btn-secondary" style="margin-bottom: var(--space-4);">
+            📍 Detectar mi ubicación automáticamente
+          </button>
+          <p id="geo-status" class="geo-status" hidden></p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="select-estado">Estado <span style="color:var(--risk-critico)">*</span></label>
+              <select id="select-estado" required aria-required="true">
+                <option value="">Seleccionar estado...</option>
+                <!-- Se llena dinámicamente con los 24 estados -->
+              </select>
+              <div id="group-estado-otro" style="display: none; margin-top: var(--space-2);">
+                <input type="text" id="input-estado-otro" placeholder="Escriba el nombre del estado">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="input-municipio">Municipio <span style="color:var(--risk-critico)">*</span></label>
+              <input type="text" id="input-municipio" placeholder="Ej: Libertador" required aria-required="true">
+            </div>
+            <div class="form-group">
+              <label for="input-parroquia">Parroquia</label>
+              <input type="text" id="input-parroquia" placeholder="Ej: El Recreo">
+            </div>
+            <div class="form-group">
+              <label for="input-direccion">Dirección</label>
+              <input type="text" id="input-direccion" placeholder="Ej: Av. Libertador, cruce con Calle Villaflor">
+            </div>
+            <div class="form-group full-width">
+              <label for="input-edificio">Nombre del edificio / residencia <span style="color:var(--risk-critico)">*</span></label>
+              <input type="text" id="input-edificio" placeholder="Ej: Residencias Las Palmas, Torre A" required aria-required="true">
+            </div>
+          </div>
+
+          <!-- Campos ocultos para coordenadas GPS -->
+          <input type="hidden" id="input-lat" name="latitude">
+          <input type="hidden" id="input-lng" name="longitude">
+        </div>
+
+        <!-- Paso 3: Datos del inmueble -->
+        <div class="form-step" id="step-inmueble">
+          <h2>🏢 Paso 3: Datos del inmueble</h2>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="select-tipo">Tipo de inmueble <span style="color:var(--risk-critico)">*</span></label>
+              <select id="select-tipo" required aria-required="true">
+                <option value="casa">Casa</option>
+                <option value="apartamento">Apartamento</option>
+                <option value="comercial">Local comercial</option>
+                <option value="industrial">Industrial</option>
+                <option value="educativo">Centro educativo</option>
+                <option value="salud">Centro de salud</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-piso">Piso donde está el daño</label>
+              <input type="number" id="input-piso" min="0" max="50" placeholder="Ej: 3">
+            </div>
+            <div class="form-group full-width">
+              <label for="textarea-descripcion">Describe el daño que observas</label>
+              <textarea id="textarea-descripcion" rows="3" placeholder="Ej: Grieta diagonal en la columna del pasillo, se escucha crujido al pisar el piso 3..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de envío -->
+        <button type="submit" id="btn-analizar" class="btn btn-primary btn-large">
+          🔍 Analizar Daños
+        </button>
+
+      </form>
+
+      <!-- Área de resultados -->
+      <div id="resultado-analisis" class="card result-card" hidden>
+        <!-- Se llena dinámicamente por analysis.js -->
+      </div>
+
+    </section>
+
+    <!-- ===== SECCIÓN: MAPA DE DAÑOS (OCULTA TEMPORALMENTE) ===== -->
+    <section id="section-mapa" class="page-section" hidden aria-labelledby="mapa-heading">
+      <h1 id="mapa-heading">🗺️ Mapa de Daños Reportados</h1>
+      <p class="section-lead">Visualiza los reportes de daños en todo el territorio nacional.</p>
+      <div class="map-filters card" id="map-filters">
+        <div class="filter-group">
+          <label>Nivel de riesgo</label>
+          <div class="filter-chips" id="filter-riesgo">
+            <button class="chip active" data-risk="todos">Todos</button>
+            <button class="chip chip-bajo"   data-risk="BAJO">🟢 Bajo</button>
+            <button class="chip chip-medio"  data-risk="MEDIO">🟡 Medio</button>
+            <button class="chip chip-alto"   data-risk="ALTO">🟠 Alto</button>
+            <button class="chip chip-critico" data-risk="CRITICO">🔴 Crítico</button>
+          </div>
+        </div>
+        <div class="filter-group" style="max-width: 200px;">
+          <label for="filter-estado">Estado</label>
+          <select id="filter-estado">
+            <option value="">Todos los estados</option>
+          </select>
+        </div>
+      </div>
+      <div id="map-container" class="map-container">
+        <div id="map" style="height: 480px; width: 100%;"></div>
+      </div>
+      <div id="map-stats" class="stats-grid"></div>
+    </section>
+
+    <!-- ===== SECCIÓN: PANEL DE ESPECIALISTAS ===== -->
+    <section id="section-especialistas" class="page-section" aria-labelledby="especialistas-heading">
+
+      <!-- Vista de login -->
+      <div id="specialist-login" class="card">
+        <h1 id="especialistas-heading">👷 Panel de Especialistas</h1>
+        <p>Acceso exclusivo para ingenieros y especialistas verificados.</p>
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <label for="input-access-code">Código de acceso</label>
+          <input type="password" id="input-access-code" placeholder="Ingresa tu código de acceso" autocomplete="current-password">
+        </div>
+        <button id="btn-specialist-login" class="btn btn-primary" style="width:100%;">
+          Iniciar Sesión
+        </button>
+        <p id="login-error" class="error-text" hidden></p>
+      </div>
+
+      <!-- Dashboard de especialista (oculto hasta login) -->
+      <div id="specialist-dashboard" hidden>
+        <div class="dashboard-header">
+          <h1>👷 Bienvenido, <span id="specialist-name"></span></h1>
+          <button id="btn-specialist-logout" class="btn btn-secondary btn-small">
+            Cerrar sesión
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" id="specialist-tabs" role="tablist">
+          <button class="tab active" data-tab="pendientes" role="tab">
+            Pendientes <span id="badge-pendientes" class="badge-tab">0</span>
+          </button>
+          <button class="tab" data-tab="prioritarios" role="tab">
+            Prioritarios <span id="badge-prioritarios" class="badge-tab">0</span>
+          </button>
+          <button class="tab" data-tab="mis-revisiones" role="tab">
+            Mis revisiones <span id="badge-revisiones" class="badge-tab">0</span>
+          </button>
+        </div>
+
+        <!-- Lista de reportes -->
+        <div id="specialist-reports-list" class="reports-list">
+          <!-- Se llena dinámicamente por specialist.js -->
+        </div>
+
+        <!-- Modal de revisión -->
+        <div id="modal-revision" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-revision-title">
+          <div class="modal-content card">
+            <button class="modal-close" id="btn-close-modal" aria-label="Cerrar modal">&times;</button>
+            <h2 id="modal-revision-title" style="margin-bottom: var(--space-6);">Revisión Profesional</h2>
+
+            <!-- Imágenes del reporte -->
+            <div id="revision-images" class="revision-images"></div>
+
+            <!-- Diagnóstico preliminar (referencia) -->
+            <div id="revision-ai-diagnosis" class="ai-diagnosis-ref"></div>
+
+            <!-- Formulario de revisión -->
+            <form id="form-revision">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="rev-nivel-riesgo">Nivel de riesgo <span style="color:var(--risk-critico)">*</span></label>
+                  <select id="rev-nivel-riesgo" required>
+                    <option value="BAJO">🟢 BAJO</option>
+                    <option value="MEDIO">🟡 MEDIO</option>
+                    <option value="ALTO">🟠 ALTO</option>
+                    <option value="CRITICO">🔴 CRÍTICO</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tipo de daño <span style="color:var(--risk-critico)">*</span></label>
+                  <div class="checkbox-group" id="rev-tipo-dano">
+                    <label><input type="checkbox" value="cosmetico"> Cosmético</label>
+                    <label><input type="checkbox" value="estructural_parcial"> Estructural parcial</label>
+                    <label><input type="checkbox" value="estructural_severo"> Estructural severo</label>
+                    <label><input type="checkbox" value="riesgo_colapso"> Riesgo de colapso</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Elementos afectados</label>
+                  <div class="checkbox-group" id="rev-elementos">
+                    <label><input type="checkbox" value="columnas"> Columnas</label>
+                    <label><input type="checkbox" value="vigas"> Vigas</label>
+                    <label><input type="checkbox" value="losas"> Losas</label>
+                    <label><input type="checkbox" value="paredes"> Paredes</label>
+                    <label><input type="checkbox" value="fundaciones"> Fundaciones</label>
+                    <label><input type="checkbox" value="escaleras"> Escaleras</label>
+                    <label><input type="checkbox" value="fachada"> Fachada</label>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label for="rev-diagnostico">Diagnóstico profesional <span style="color:var(--risk-critico)">*</span></label>
+                  <textarea id="rev-diagnostico" rows="4" required placeholder="Describa su evaluación técnica del daño..."></textarea>
+                </div>
+                <div class="form-group full-width">
+                  <label for="rev-recomendaciones">Recomendaciones</label>
+                  <textarea id="rev-recomendaciones" rows="3" placeholder="Acciones recomendadas para el propietario..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label style="display:flex; align-items:center; gap:var(--space-2); cursor:pointer; font-weight:500;">
+                    <input type="checkbox" id="rev-evacuacion" style="width:15px;height:15px;accent-color:var(--risk-critico);">
+                    ⚠️ Requiere evacuación inmediata
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label style="display:flex; align-items:center; gap:var(--space-2); cursor:pointer; font-weight:500;">
+                    <input type="checkbox" id="rev-inspeccion-urgente" style="width:15px;height:15px;accent-color:var(--accent-primary);">
+                    🔍 Requiere inspección presencial urgente
+                  </label>
+                </div>
+              </div>
+
+              <input type="hidden" id="rev-report-id">
+              <button type="submit" class="btn btn-primary" style="width:100%; margin-top:var(--space-4);">
+                ✅ Enviar Revisión
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECCIÓN: INFORMACIÓN DE EMERGENCIA ===== -->
+    <section id="section-info" class="page-section" aria-labelledby="info-heading">
+      <h1 id="info-heading">🆘 Información de Emergencia</h1>
+
+      <!-- Números de emergencia (OCULTO TEMPORALMENTE — pendiente verificar números exactos) -->
+      <div class="card" id="emergency-numbers" hidden>
+        <h2 style="margin-bottom: var(--space-2);">📞 Números de Emergencia</h2>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">Toca un número para llamar directamente.</p>
+        <div class="emergency-grid">
+          <a href="tel:911" class="emergency-card" id="ec-911">
+            <span class="emergency-icon">🚨</span>
+            <span class="emergency-label">Emergencias</span>
+            <span class="emergency-number">911</span>
+          </a>
+          <a href="tel:171" class="emergency-card" id="ec-171">
+            <span class="emergency-icon">🛡️</span>
+            <span class="emergency-label">Protección Civil</span>
+            <span class="emergency-number">171</span>
+          </a>
+          <a href="tel:08003886474" class="emergency-card" id="ec-funvisis">
+            <span class="emergency-icon">🌍</span>
+            <span class="emergency-label">FUNVISIS</span>
+            <span class="emergency-number">0800-FUNVISIS</span>
+          </a>
+          <a href="tel:08002662376" class="emergency-card" id="ec-bomberos">
+            <span class="emergency-icon">🚒</span>
+            <span class="emergency-label">Bomberos</span>
+            <span class="emergency-number">0800-BOMBERO</span>
+          </a>
+          <a href="tel:08002783256" class="emergency-card" id="ec-cruzroja">
+            <span class="emergency-icon">❤️</span>
+            <span class="emergency-label">Cruz Roja</span>
+            <span class="emergency-number">0800-CRUZROJA</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Qué hacer después del terremoto -->
+      <div class="card" id="post-earthquake-guide">
+        <h2 style="margin-bottom: var(--space-1);">📋 ¿Qué hacer después del terremoto?</h2>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-2);">Guía de seguridad basada en protocolos internacionales (ATC-20) y recomendaciones oficiales de FUNVISIS y Protección Civil de Venezuela.</p>
+        <div class="accordion">
+          <details>
+            <summary>🚪 ¿Es seguro entrar a mi casa?</summary>
+            <div class="accordion-content">
+              <p><strong>NO entre al inmueble si observa cualquiera de estas condiciones:</strong></p>
+              <ul>
+                <li>Grietas anchas (más de 1 cm) en columnas, vigas o nudos estructurales</li>
+                <li>El edificio presenta inclinación visible, hundimiento o desplazamiento</li>
+                <li>Hay escombros cayendo, desprendimiento de fachadas o techo con pandeo</li>
+                <li>Percibe olor a gas en las inmediaciones</li>
+                <li>Hay cables eléctricos caídos o expuestos cerca del acceso</li>
+                <li>Hay charcos de agua inusuales que podrían indicar tuberías rotas</li>
+              </ul>
+              <p><strong>Puede entrar con precaución si:</strong></p>
+              <ul>
+                <li>Solo hay grietas finas (menos de 1 mm de ancho) en paredes no estructurales</li>
+                <li>Los daños se limitan al friso (revestimiento), pintura o acabados superficiales</li>
+                <li>Las puertas y ventanas abren y cierran con normalidad (sin atascarse)</li>
+                <li>No percibe olores inusuales ni observa deformaciones en pisos o techos</li>
+              </ul>
+              <p><strong>Importante:</strong> Según Protección Civil de Venezuela, no reingrese a un inmueble con daños considerables hasta que las autoridades competentes (Protección Civil, Bomberos o ingenieros civiles) realicen una inspección oficial. Utilice únicamente las escaleras para desalojar; <strong>nunca use el ascensor</strong> después de un sismo.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>⚠️ Señales de peligro estructural</summary>
+            <div class="accordion-content">
+              <p>Estas son señales de daño estructural significativo que requieren evaluación profesional inmediata:</p>
+              <ul>
+                <li><strong>Grietas diagonales en forma de X</strong> en paredes → indican posible falla por cortante (esfuerzo lateral)</li>
+                <li><strong>Grietas horizontales en la base de columnas</strong> → indican falla por flexión o formación de rótulas plásticas</li>
+                <li><strong>Acero de refuerzo (cabillas) expuesto</strong> por desprendimiento de concreto → daño estructural severo, posible pérdida de capacidad portante</li>
+                <li><strong>Concreto desprendido o aplastado</strong> en columnas, vigas o nudos → la integridad estructural puede estar comprometida</li>
+                <li><strong>Pisos desnivelados o inclinados</strong>, puertas y ventanas que no cierran → indica deformación permanente de la estructura (desplazamiento entre pisos)</li>
+                <li><strong>Sonidos de crujido persistentes</strong> provenientes de la estructura → pueden indicar movimiento progresivo de elementos dañados</li>
+                <li><strong>Separación visible entre paredes y columnas/vigas</strong> → pérdida de conexión entre elementos estructurales y no estructurales</li>
+              </ul>
+              <p><strong>Nota:</strong> En el sistema ATC-20, un edificio con estas señales recibiría una clasificación <strong>Roja (Inseguro)</strong> o <strong>Amarilla (Uso Restringido)</strong> y requiere inspección profesional antes de su reocupación.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>🔌 Gas y electricidad</summary>
+            <div class="accordion-content">
+              <p><strong>Si sospecha fuga de gas:</strong></p>
+              <ul>
+                <li>NO encienda interruptores eléctricos, fósforos, velas ni encendedores</li>
+                <li>NO use el teléfono dentro del inmueble (puede generar chispas)</li>
+                <li>Cierre la llave principal de gas si puede acceder a ella con seguridad</li>
+                <li>Ventile abriendo puertas y ventanas si es seguro hacerlo</li>
+                <li>Salga del inmueble y llame a los bomberos desde el exterior</li>
+              </ul>
+              <p><strong>Seguridad eléctrica:</strong></p>
+              <ul>
+                <li>Si ve cables expuestos, chispas o siente hormigueo al tocar superficies, baje el breaker principal (interruptor general)</li>
+                <li>NO toque equipos eléctricos con las manos mojadas ni pise charcos de agua cerca de instalaciones eléctricas</li>
+                <li>Si hay cables caídos en la calle, manténgase a más de 10 metros de distancia y avise a las autoridades</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>🔄 Réplicas: qué esperar</summary>
+            <div class="accordion-content">
+              <p>Las réplicas son sismos secundarios normales que ocurren después del sismo principal. Pueden continuar durante días, semanas o incluso meses, con intensidad generalmente decreciente.</p>
+              <ul>
+                <li>Tenga un plan de evacuación listo con rutas de salida identificadas</li>
+                <li>Mantenga una mochila de emergencia cerca de la puerta de salida</li>
+                <li>Ante una réplica, aplique la técnica de protección: <strong>agáchese, cúbrase y agárrese</strong> (bajo una mesa resistente o junto a una pared interior, protegiendo cabeza y cuello)</li>
+                <li>Si está dentro de un edificio dañado durante una réplica, desaloje cuando el movimiento haya cesado, utilizando las escaleras</li>
+                <li>No reingrese a edificios dañados sin autorización de las autoridades</li>
+                <li>Manténgase informado a través de los canales oficiales de FUNVISIS y Protección Civil</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>🎒 Kit de emergencia</summary>
+            <div class="accordion-content">
+              <p>Tenga preparado un kit con suministros para al menos <strong>72 horas</strong> (3 días) por cada miembro del hogar:</p>
+              <ul>
+                <li>Agua potable: mínimo 3 litros por persona por día (para beber y preparar alimentos)</li>
+                <li>Alimentos no perecederos (enlatados, barras energéticas, galletas)</li>
+                <li>Linterna con baterías de repuesto (evite usar velas)</li>
+                <li>Radio portátil a baterías (para recibir información oficial)</li>
+                <li>Botiquín de primeros auxilios con medicamentos esenciales</li>
+                <li>Documentos de identidad y documentos importantes en bolsa impermeable</li>
+                <li>Cargador portátil (power bank) para el teléfono celular</li>
+                <li>Silbato de emergencia (para señalizar su ubicación si queda atrapado)</li>
+                <li>Artículos de higiene básica y mascarilla contra polvo</li>
+                <li>Efectivo en denominaciones pequeñas</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>📍 Evacuación segura</summary>
+            <div class="accordion-content">
+              <p><strong>Al evacuar un edificio después del sismo:</strong></p>
+              <ul>
+                <li>Mantenga la calma y desaloje de forma ordenada</li>
+                <li>Use <strong>únicamente las escaleras</strong>; nunca el ascensor</li>
+                <li>Diríjase a un punto de reunión seguro: áreas abiertas como plazas, parques o estacionamientos amplios</li>
+                <li>Aléjese de edificios, muros, postes eléctricos y árboles que puedan colapsar</li>
+                <li>Si queda atrapado, no grite (para evitar inhalar polvo); use un silbato o golpee objetos sólidos para que los rescatistas lo localicen</li>
+                <li>Evite saturar las líneas telefónicas; use mensajes de texto o redes sociales para comunicarse con familiares</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Checklist de seguridad interactivo -->
+      <div class="card" id="safety-checklist">
+        <h2 style="margin-bottom: var(--space-1);">✅ Checklist de Inspección Visual Rápida</h2>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-2);">Evaluación preliminar de tu inmueble basada en los criterios de inspección rápida ATC-20 (Applied Technology Council). Si marcas <strong>una o más</strong> casillas, solicita una inspección profesional antes de reocupar el inmueble.</p>
+        <div class="checklist" id="checklist-items">
+          <!-- Se genera dinámicamente por app.js -->
+        </div>
+        <p style="font-size: var(--font-size-xs); color: var(--text-muted); margin-top: var(--space-4); line-height: 1.6;">⚠️ <strong>Aviso:</strong> Esta lista es una herramienta de autoevaluación preliminar y no sustituye la inspección realizada por ingenieros civiles, arquitectos o personal de Protección Civil.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTÓN SOS FLOTANTE ===== -->
+  <button id="btn-sos" class="btn-sos" aria-label="Abrir panel de emergencia SOS">
+    🆘<br>SOS
+  </button>
+
+  <!-- Modal SOS -->
+  <div id="modal-sos" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="sos-title">
+    <div class="modal-content card">
+      <button class="modal-close" id="btn-close-sos" aria-label="Cerrar">&times;</button>
+      <h2 id="sos-title" style="margin-bottom: var(--space-5); color: var(--risk-critico);">🆘 Emergencia</h2>
+      <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-5);">Toca para llamar directamente:</p>
+      <div class="emergency-grid">
+        <a href="tel:911" class="emergency-card emergency-card-large" id="sos-911">
+          <span class="emergency-icon">🚨</span>
+          <span class="emergency-label">Llamar al 911</span>
+          <span class="emergency-number">911</span>
+        </a>
+        <a href="tel:171" class="emergency-card emergency-card-large" id="sos-171">
+          <span class="emergency-icon">🛡️</span>
+          <span class="emergency-label">Protección Civil</span>
+          <span class="emergency-number">171</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div id="toast-container" class="toast-container" role="region" aria-live="polite" aria-label="Notificaciones"></div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/analysis.js"></script>
+  <script src="/js/location.js"></script>
+  <script src="/js/map.js"></script>
+  <script src="/js/specialist.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
