@@ -160,6 +160,22 @@
 
       </form>
 
+      <!-- Pantalla de carga (se muestra al enviar el formulario) -->
+      <div id="loading-overlay" class="loading-overlay" hidden>
+        <div class="loading-content">
+          <div class="loading-spinner-ring">
+            <div class="loading-ring"></div>
+            <span class="loading-icon">🔍</span>
+          </div>
+          <h2 class="loading-title">Estamos analizando los daños</h2>
+          <p class="loading-subtitle">Procesando imágenes e identificando daños estructurales…</p>
+          <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+          </div>
+          <p class="loading-hint">Esto puede tardar unos segundos</p>
+        </div>
+      </div>
+
       <!-- Área de resultados -->
       <div id="resultado-analisis" class="card result-card" hidden>
         <!-- Se llena dinámicamente por analysis.js -->

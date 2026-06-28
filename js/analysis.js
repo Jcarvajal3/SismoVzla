@@ -102,9 +102,9 @@ function displayResults(diagnosis, reportId, containerId, reviews = []) {
       handleShareReport(window._lastReportId, window._lastDiagnosis);
     });
   }
-  const specialistBtn = document.getElementById('btn-request-specialist');
-  if (specialistBtn) {
-    specialistBtn.addEventListener('click', requestSpecialistAlert);
+  const newAnalysisBtn = document.getElementById('btn-new-analysis');
+  if (newAnalysisBtn) {
+    newAnalysisBtn.addEventListener('click', handleNewAnalysis);
   }
 }
 
@@ -279,8 +279,8 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
       <button type="button" class="btn btn-secondary" id="btn-share-report">
         📤 Compartir Reporte
       </button>
-      <button type="button" class="btn btn-primary" id="btn-request-specialist">
-        👷 Solicitar Revisión Profesional
+      <button type="button" class="btn btn-primary" id="btn-new-analysis">
+        🔄 Nuevo Análisis
       </button>
     </div>
   `;

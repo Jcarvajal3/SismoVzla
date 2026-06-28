@@ -169,41 +169,92 @@ function setupFormSubmission() {
       return;
     }
 
-    // Deshabilitar botón y mostrar spinner de carga
-    showSpinner(submitBtn);
-
-    // Ocultar diagnóstico anterior si lo hubiera
+    // === NUEVO FLUJO: Ocultar form/hero → Mostrar pantalla de carga ===
+    const hero = document.getElementById('hero-evaluar');
+    const loadingOverlay = document.getElementById('loading-overlay');
     const resultContainer = document.getElementById('resultado-analisis');
+
+    // Ocultar formulario y hero
+    form.hidden = true;
+    if (hero) hero.hidden = true;
+
+    // Ocultar resultado anterior
     if (resultContainer) resultContainer.hidden = true;
 
+    // Mostrar pantalla de carga
+    if (loadingOverlay) loadingOverlay.removeAttribute('hidden');
+
+    // Scroll al tope de la sección
+    document.getElementById('section-evaluar').scrollIntoView({ behavior: 'smooth' });
+
     try {
-      showToast('Subiendo imágenes y analizando daños...', 'info');
-      
       const res = await submitAnalysis(images, formData);
 
       if (res && res.success) {
-        showToast('Diagnóstico generado con éxito.', 'success');
-        
+        // Ocultar pantalla de carga
+        if (loadingOverlay) loadingOverlay.hidden = true;
+
         // Renderizar los resultados
         displayResults(res.diagnosis, res.reportId, 'resultado-analisis');
-        
+
         // Limpiar el estado de fotos y inputs del formulario
         clearImages();
         form.reset();
-        
+
         // Limpiar las coordenadas ocultas y estado GPS
         document.getElementById('input-lat').value = '';
         document.getElementById('input-lng').value = '';
         const geoStatus = document.getElementById('geo-status');
         if (geoStatus) geoStatus.hidden = true;
+
+        showToast('Diagnóstico generado con éxito.', 'success');
       }
     } catch (error) {
       console.error('Error al procesar la evaluación:', error);
       showToast(error.message || 'Ocurrió un error al procesar el análisis.', 'error');
-    } finally {
-      hideSpinner(submitBtn, '🔍 Analizar Daños');
+
+      // En caso de error, volver al formulario
+      if (loadingOverlay) loadingOverlay.hidden = true;
+      form.hidden = false;
+      if (hero) hero.removeAttribute('hidden');
     }
   });
+}
+
+/**
+ * Reinicia la vista al formulario para hacer un nuevo análisis.
+ */
+function handleNewAnalysis() {
+  const form = document.getElementById('form-evaluacion');
+  const hero = document.getElementById('hero-evaluar');
+  const resultContainer = document.getElementById('resultado-analisis');
+  const loadingOverlay = document.getElementById('loading-overlay');
+
+  // Ocultar resultados y carga
+  if (resultContainer) resultContainer.hidden = true;
+  if (loadingOverlay) loadingOverlay.hidden = true;
+
+  // Mostrar formulario y hero
+  if (form) {
+    form.hidden = false;
+    form.reset();
+  }
+  if (hero) hero.removeAttribute('hidden');
+
+  // Limpiar fotos previamente cargadas
+  if (typeof clearImages === 'function') clearImages();
+
+  // Limpiar coordenadas GPS
+  const inputLat = document.getElementById('input-lat');
+  const inputLng = document.getElementById('input-lng');
+  if (inputLat) inputLat.value = '';
+  if (inputLng) inputLng.value = '';
+
+  const geoStatus = document.getElementById('geo-status');
+  if (geoStatus) geoStatus.hidden = true;
+
+  // Scroll al tope
+  document.getElementById('section-evaluar').scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
