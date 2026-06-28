@@ -276,8 +276,10 @@ IMPORTANTE: Si las imagenes no corresponden a danos estructurales o danos en inm
 
     if (!geminiResponse.ok) {
       const geminiErrText = await geminiResponse.text();
-      console.error('Error al llamar a Gemini API:', geminiErrText);
-      throw new Error('Error al procesar el análisis visual preliminar.');
+      console.error(`Error Gemini API [HTTP ${geminiResponse.status}]:`, geminiErrText);
+      // Incluir detalle del error para diagnóstico (truncar a 500 chars por seguridad)
+      const errorDetail = geminiErrText.substring(0, 500);
+      throw new Error(`Error al procesar el análisis visual preliminar. [HTTP ${geminiResponse.status}]: ${errorDetail}`);
     }
 
     const geminiData = await geminiResponse.json();
