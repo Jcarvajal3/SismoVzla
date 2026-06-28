@@ -119,6 +119,20 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
   const riskClass = getRiskColor(diagnosis.nivel_riesgo);
   const formattedRisk = diagnosis.nivel_riesgo || 'MEDIO';
 
+  // Etiqueta de acceso ANIH (Verde/Amarilla/Roja)
+  const etiqueta = diagnosis.etiqueta_acceso || '';
+  const etiquetaConfig = {
+    'VERDE':    { icon: '🟢', label: 'Acceso Permitido',    style: 'background:rgba(34,197,94,0.15); color:#16a34a; border:1px solid #16a34a;' },
+    'AMARILLA': { icon: '🟡', label: 'Acceso Restringido',  style: 'background:rgba(234,179,8,0.15);  color:#b45309; border:1px solid #ca8a04;' },
+    'ROJA':     { icon: '🔴', label: 'Acceso No Permitido', style: 'background:rgba(239,68,68,0.15);  color:#dc2626; border:1px solid #dc2626;' },
+  };
+  const etiquetaInfo = etiquetaConfig[etiqueta] || null;
+  const etiquetaHtml = etiquetaInfo
+    ? `<div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:0.5px; ${etiquetaInfo.style}">
+        ${etiquetaInfo.icon} ETIQUETA ${etiqueta} — ${etiquetaInfo.label}
+       </div>`
+    : '';
+
   let specialistReviewHtml = '';
   if (reviews && reviews.length > 0) {
     const rev = reviews[0];
@@ -230,6 +244,11 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
       <h3 class="result-title">Análisis de Riesgo Preliminar</h3>
       <span class="badge badge-${riskClass}">${formattedRisk}</span>
     </div>
+    ${etiquetaHtml ? `
+    <div style="margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Dictamen de Acceso (Metodología ANIH 2023):</span>
+      ${etiquetaHtml}
+    </div>` : ''}
 
     <!-- Medidor de Riesgo -->
     <div class="risk-meter">
@@ -272,7 +291,7 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
     ` : ''}
 
     <div class="disclaimer-box">
-      <p>⚠️ <strong>Aviso Importante (Disclaimer):</strong> Este diagnóstico fue generado automáticamente y posee carácter únicamente informativo. No reemplaza bajo ninguna circunstancia una inspección física realizada por ingenieros civiles, bomberos o personal calificado de Protección Civil.</p>
+      <p>⚠️ <strong>Aviso Importante (Disclaimer):</strong> Este diagnóstico fue generado automáticamente con criterios de la metodología <strong>"Evaluación Rápida de Daños en Edificaciones"</strong> (ANIH, Boletín Nº 61, 2023) desarrollada por FUNVISIS. Posee carácter únicamente informativo y no reemplaza bajo ninguna circunstancia una inspección física realizada por ingenieros civiles, bomberos o personal calificado de Protección Civil.</p>
     </div>
 
     <div class="result-actions">
