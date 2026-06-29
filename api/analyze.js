@@ -262,76 +262,49 @@ IMPORTANTE: Si las imagenes no corresponden a danos estructurales o danos en inm
       }
     };
 
-    // Cadena de modelos: primario y fallbacks en caso de sobrecarga (503) o rate limit (429)
-    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
-    const MAX_RETRIES = 2; // Reintentos por modelo antes de pasar al siguiente
-    const BASE_DELAY_MS = 1000; // Delay base para backoff exponencial
+    // Usar siempre gemini-2.5-flash con reintentos automáticos ante sobrecarga temporal
+    const MODEL = 'gemini-2.5-flash';
+    const MAX_RETRIES = 3;
+    const BASE_DELAY_MS = 1500; // 1.5s, 3s, 6s
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${geminiApiKey}`;
 
     let geminiData = null;
-    let lastError = null;
 
-    for (const model of models) {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
-
-      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-        try {
-          // Esperar con backoff exponencial en reintentos (no en el primer intento)
-          if (attempt > 0) {
-            const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
-            console.log(`Reintento ${attempt}/${MAX_RETRIES} con ${model} en ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-
-          const geminiResponse = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(geminiBody)
-          });
-
-          if (geminiResponse.ok) {
-            geminiData = await geminiResponse.json();
-            console.log(`Análisis exitoso con modelo: ${model} (intento ${attempt + 1})`);
-            break; // Éxito, salir del loop de reintentos
-          }
-
-          const status = geminiResponse.status;
-          const errText = await geminiResponse.text();
-
-          // Reintentar en errores transitorios (503 sobrecarga, 429 rate limit, 500 interno)
-          if (status === 503 || status === 429 || status === 500) {
-            console.warn(`Modelo ${model} respondió HTTP ${status} (intento ${attempt + 1}/${MAX_RETRIES + 1})`);
-            lastError = `[HTTP ${status}] ${model}: ${errText.substring(0, 300)}`;
-            continue; // Reintentar mismo modelo
-          }
-
-          // Error específico del modelo (404 modelo no existe, 403 sin acceso) → saltar al siguiente modelo
-          if (status === 404 || status === 403) {
-            console.warn(`Modelo ${model} no disponible (HTTP ${status}). Saltando al siguiente modelo...`);
-            lastError = `[HTTP ${status}] ${model}: ${errText.substring(0, 300)}`;
-            break; // Salir del loop de reintentos, probar siguiente modelo
-          }
-
-          // Otro error no transitorio (400, etc.) → error definitivo
-          console.error(`Error definitivo Gemini API [HTTP ${status}] con ${model}:`, errText.substring(0, 500));
-          throw new Error(`Error al procesar el análisis visual preliminar. [HTTP ${status}]: ${errText.substring(0, 500)}`);
-
-        } catch (fetchErr) {
-          // Si es un throw nuestro (error definitivo), re-lanzar
-          if (fetchErr.message.includes('Error al procesar')) throw fetchErr;
-          // Error de red/timeout
-          console.warn(`Error de red con ${model} (intento ${attempt + 1}):`, fetchErr.message);
-          lastError = `Error de red con ${model}: ${fetchErr.message}`;
-        }
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      if (attempt > 1) {
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt - 2);
+        console.log(`Reintento ${attempt}/${MAX_RETRIES} con ${MODEL} en ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      // Si ya obtuvimos datos, salir del loop de modelos
-      if (geminiData) break;
-      console.warn(`Modelo ${model} agotó reintentos. Probando siguiente modelo...`);
+      const geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(geminiBody)
+      });
+
+      if (geminiResponse.ok) {
+        geminiData = await geminiResponse.json();
+        console.log(`Análisis exitoso con ${MODEL} (intento ${attempt})`);
+        break;
+      }
+
+      const status = geminiResponse.status;
+      const errText = await geminiResponse.text();
+
+      // Errores transitorios: reintentar
+      if ((status === 503 || status === 429 || status === 500) && attempt < MAX_RETRIES) {
+        console.warn(`${MODEL} respondió HTTP ${status} (intento ${attempt}/${MAX_RETRIES}). Reintentando...`);
+        continue;
+      }
+
+      // Agotados los reintentos en error transitorio, o error definitivo
+      console.error(`Error Gemini API [HTTP ${status}] con ${MODEL}:`, errText.substring(0, 300));
+      break;
     }
 
-    // Si ningún modelo funcionó
     if (!geminiData) {
-      throw new Error(`Todos los modelos de análisis están temporalmente no disponibles. Intente nuevamente en unos minutos. Último error: ${lastError || 'desconocido'}`);
+      throw new Error('⚠️ Los servidores de análisis están colapsados en este momento. Por favor, inténtalo de nuevo en unos minutos.');
     }
 
     const analysisText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
