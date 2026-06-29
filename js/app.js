@@ -102,7 +102,7 @@ function setupRouter() {
 
     // 2. Manejo de Secciones Estándar
     const sectionName = hash.substring(1);
-    const validSections = ['evaluar', 'info'];
+    const validSections = ['evaluar', 'especialistas', 'info'];
     const activeSection = validSections.includes(sectionName) ? sectionName : 'evaluar';
 
     // Mostrar sección correspondiente
