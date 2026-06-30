@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Orquesta la inicialización de todos los módulos y configuraciones.
  */
 function initApp() {
-  console.log('🇻🇪 Inicializando EstructuraScan...');
+  console.log('🇻🇪 Inicializando Análisis de Estructura...');
 
   // Inicializar módulos secundarios
   initLocation();

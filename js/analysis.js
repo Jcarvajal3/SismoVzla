@@ -242,7 +242,7 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
     ${evacuationBanner}
     
     <div class="result-header">
-      <h3 class="result-title">Análisis de Riesgo Preliminar</h3>
+      <h3 class="result-title">🤖 Diagnóstico con IA — Riesgo Preliminar</h3>
       <span class="badge badge-${riskClass}">${formattedRisk}</span>
     </div>
     ${etiquetaHtml ? `
@@ -292,7 +292,7 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
     ` : ''}
 
     <div class="disclaimer-box">
-      <p>⚠️ <strong>Aviso Importante (Disclaimer):</strong> Este diagnóstico fue generado automáticamente con criterios de la metodología <strong>"Evaluación Rápida de Daños en Edificaciones"</strong> (ANIH, Boletín Nº 61, 2023) desarrollada por FUNVISIS. Posee carácter únicamente informativo y no reemplaza bajo ninguna circunstancia una inspección física realizada por ingenieros civiles, bomberos o personal calificado de Protección Civil.</p>
+      <p>⚠️ <strong>Aviso Importante (Disclaimer):</strong> Este diagnóstico fue generado automáticamente por <strong>Inteligencia Artificial (Gemini)</strong> usando los criterios de la metodología <strong>“Evaluación Rápida de Daños en Edificaciones”</strong> (ANIH, Boletín Nº 61, 2023) desarrollada por FUNVISIS. El análisis con IA posee carácter únicamente informativo y <strong>no reemplaza</strong> bajo ninguna circunstancia una inspección física realizada por ingenieros civiles, bomberos o personal calificado de Protección Civil.</p>
     </div>
 
     <div class="result-actions">

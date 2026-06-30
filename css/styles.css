@@ -23,11 +23,12 @@
   --border-medium:  #cbd5e1;   /* Borde medio / hover               */
   --border-strong:  #94a3b8;   /* Borde fuerte / focus              */
 
-  /* ── Acentos de marca ─────────────────────────────────────────────────── */
-  --accent-primary:       #e8742a;   /* Ámbar de emergencia (ajustado) */
-  --accent-primary-light: #fff4ec;   /* Tinte claro del acento         */
-  --accent-primary-hover: #c85d14;   /* Hover del acento               */
-  --accent-primary-glow:  rgba(232, 116, 42, 0.18);
+  /* ── Acentos de marca — Quarto Brand ─────────────────────────────────── */
+  --accent-primary:       #00BF96;   /* Quarto teal principal          */
+  --accent-primary-light: #e0faf4;   /* Tinte claro del acento         */
+  --accent-primary-hover: #00a37f;   /* Hover del acento               */
+  --accent-primary-glow:  rgba(0, 191, 150, 0.20);
+  --accent-dark:          #032C29;   /* Quarto verde oscuro            */
 
   --accent-blue:       #2563eb;   /* Azul informativo               */
   --accent-blue-light: #eff6ff;   /* Tinte azul claro               */
@@ -86,7 +87,7 @@
   --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.10), 0 4px 8px rgba(0, 0, 0, 0.04);
   --shadow-xl:  0 16px 40px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.05);
-  --shadow-accent: 0 4px 14px rgba(232, 116, 42, 0.30);
+  --shadow-accent: 0 4px 14px rgba(0, 191, 150, 0.30);
 
   /* ── Transiciones ────────────────────────────────────────────────────── */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -141,15 +142,16 @@ body {
   left: 0;
   width: 100%;
   height: var(--header-height);
-  background-color: rgba(255, 255, 255, 0.90);
+  background-color: var(--accent-dark);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid rgba(0, 191, 150, 0.15);
   z-index: 1000;
   display: flex;
   align-items: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 16px rgba(3, 44, 41, 0.40);
 }
+
 
 .header-content {
   width: 100%;
@@ -186,17 +188,52 @@ body {
   }
 }
 
-.logo span.logo-accent {
+.logo .logo-accent {
   color: var(--accent-primary);
 }
 
-.flag-icon {
-  width: 27px;
-  height: 18px;
-  border-radius: 3px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+/* Quarto logo image */
+.quarto-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 6px;
   flex-shrink: 0;
-  display: inline-block;
+  display: block;
+}
+
+/* Text block next to the Quarto logo */
+.logo-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.1;
+}
+
+.logo-app-name {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #ffffff;
+}
+
+@media (min-width: 480px) {
+  .logo-app-name {
+    font-size: var(--font-size-lg);
+  }
+}
+
+.logo-powered {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+
+.logo-powered strong {
+  color: var(--accent-primary);
+  font-weight: 700;
 }
 
 #main-nav {
@@ -205,7 +242,7 @@ body {
 }
 
 .nav-link {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -217,14 +254,14 @@ body {
 }
 
 .nav-link:hover {
-  color: var(--text-primary);
-  background-color: var(--bg-subtle);
+  color: #ffffff;
+  background-color: rgba(0, 191, 150, 0.15);
 }
 
 .nav-link.active {
-  color: var(--accent-primary);
-  background-color: var(--accent-primary-light);
-  border-color: rgba(232, 116, 42, 0.20);
+  color: #ffffff;
+  background-color: var(--accent-primary);
+  border-color: transparent;
 }
 
 /* ==========================================================================
@@ -402,7 +439,7 @@ h2 {
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(232, 116, 42, 0.40);
+  box-shadow: 0 6px 20px rgba(0, 191, 150, 0.40);
 }
 
 .btn-primary:active:not(:disabled) {
