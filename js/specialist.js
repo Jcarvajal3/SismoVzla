@@ -325,19 +325,51 @@ async function openReviewModal(reportId) {
       }
     }
 
-    // 2. Dibujar diagnóstico preliminar
+    // 2. Dibujar información del inmueble/contacto y diagnóstico preliminar
     if (aiDiagContainer) {
       const diag = report.ai_diagnosis || {};
       const riskClass = getRiskColor(diag.nivel_riesgo);
+
+      const phoneBlock = report.telefono_contacto
+        ? `<div class="contact-info-block__phone-row">
+             <a href="tel:${sanitizeHTML(report.telefono_contacto)}" class="phone-badge">
+               📞 ${sanitizeHTML(report.telefono_contacto)}
+             </a>
+             <span class="phone-hint">Llamar para asesoría sobre daños</span>
+           </div>`
+        : `<p class="contact-info-block__no-phone">📞 Teléfono de contacto no provisto por el usuario</p>`;
+
       aiDiagContainer.innerHTML = `
+        <div class="contact-info-block">
+          <p class="contact-info-block__title">🏢 Datos del Inmueble y Contacto</p>
+          <div class="contact-info-block__row">
+            <span class="contact-info-block__label">Ubicación:</span>
+            <span>${sanitizeHTML(report.estado || '')}${report.municipio ? `, ${sanitizeHTML(report.municipio)}` : ''}${report.parroquia ? `, ${sanitizeHTML(report.parroquia)}` : ''}</span>
+          </div>
+          <div class="contact-info-block__row">
+            <span class="contact-info-block__label">Edificio:</span>
+            <span>${sanitizeHTML(report.nombre_edificio || 'No especificado')}</span>
+          </div>
+          <div class="contact-info-block__row">
+            <span class="contact-info-block__label">Tipo:</span>
+            <span>${sanitizeHTML(report.tipo_inmueble || 'No especificado')}${report.piso ? ` &ndash; Piso ${report.piso}` : ''}</span>
+          </div>
+          ${report.descripcion_usuario ? `
+          <div class="contact-info-block__row">
+            <span class="contact-info-block__label">Descripción:</span>
+            <span>${sanitizeHTML(report.descripcion_usuario)}</span>
+          </div>` : ''}
+          ${phoneBlock}
+        </div>
+
         <h4>🔮 Diagnóstico Preliminar Automatizado:</h4>
-        <div style="margin: var(--space-sm) 0;">
+        <div class="ai-diagnosis__summary">
           <span class="badge badge-${riskClass}">${diag.nivel_riesgo || 'N/A'}</span>
-          <span style="margin-left: 10px;"><strong>Severidad:</strong> ${diag.probabilidad_riesgo || 0}%</span>
+          <span class="ai-diagnosis__severity"><strong>Severidad:</strong> ${diag.probabilidad_riesgo || 0}%</span>
         </div>
         <p><strong>Tipo de daño:</strong> ${sanitizeHTML(diag.tipo_dano || 'No especificado')}</p>
-        <p style="margin-top:4px;"><strong>Elementos afectados:</strong> ${(diag.elementos_afectados || []).join(', ') || 'ninguno'}</p>
-        <p style="margin-top:6px; font-style:italic; color:var(--text-secondary);">"${sanitizeHTML(diag.descripcion_danos || 'Sin descripción.')}"</p>
+        <p><strong>Elementos afectados:</strong> ${(diag.elementos_afectados || []).join(', ') || 'ninguno'}</p>
+        <p class="ai-diagnosis__description">"${sanitizeHTML(diag.descripcion_danos || 'Sin descripción.')}"</p>
       `;
     }
 

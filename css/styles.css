@@ -533,6 +533,7 @@ h2 {
 input[type="text"],
 input[type="number"],
 input[type="password"],
+input[type="tel"],
 select,
 textarea {
   background-color: var(--bg-subtle);
@@ -551,6 +552,7 @@ textarea {
 input[type="text"]::placeholder,
 input[type="number"]::placeholder,
 input[type="password"]::placeholder,
+input[type="tel"]::placeholder,
 textarea::placeholder {
   color: var(--text-muted);
 }
@@ -558,6 +560,7 @@ textarea::placeholder {
 input[type="text"]:hover,
 input[type="number"]:hover,
 input[type="password"]:hover,
+input[type="tel"]:hover,
 select:hover,
 textarea:hover {
   border-color: var(--border-medium);
@@ -567,6 +570,7 @@ textarea:hover {
 input[type="text"]:focus,
 input[type="number"]:focus,
 input[type="password"]:focus,
+input[type="tel"]:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-primary);
@@ -1545,6 +1549,133 @@ textarea {
   align-items: center;
   gap: var(--space-2);
   font-weight: 700;
+}
+
+/* ── Field hint: texto de ayuda dentro de un form-group (debajo del input) */
+.field-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  background-color: var(--accent-primary-light);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.field-hint::before {
+  content: 'ℹ️';
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Contact info block inside specialist modal ──────────────────────────── */
+.contact-info-block {
+  background-color: var(--accent-primary-light);
+  border: 1.5px solid rgba(232, 116, 42, 0.25);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  font-size: var(--font-size-sm);
+}
+
+.contact-info-block__title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.contact-info-block__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.contact-info-block__row:last-child {
+  margin-bottom: 0;
+}
+
+.contact-info-block__label {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.contact-info-block__phone-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(232, 116, 42, 0.2);
+}
+
+.contact-info-block__phone-row .phone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: background-color var(--t-fast), box-shadow var(--t-fast);
+  box-shadow: 0 2px 6px rgba(232, 116, 42, 0.3);
+}
+
+.contact-info-block__phone-row .phone-badge:hover {
+  background-color: var(--accent-primary-hover);
+  box-shadow: 0 4px 12px rgba(232, 116, 42, 0.4);
+}
+
+.contact-info-block__phone-row .phone-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.contact-info-block__no-phone {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-light);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── AI diagnosis helpers inside specialist modal ──────────────────────── */
+.ai-diagnosis__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.ai-diagnosis__severity {
+  font-size: var(--font-size-sm);
+}
+
+.ai-diagnosis__description {
+  margin-top: var(--space-2);
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 /* ==========================================================================

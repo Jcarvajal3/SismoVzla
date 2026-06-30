@@ -17,6 +17,7 @@ async function submitAnalysis(images, formData) {
       tipo_inmueble: formData.tipo,
       piso: formData.piso ? parseInt(formData.piso) : null,
       descripcion_usuario: formData.descripcion,
+      telefono_contacto: formData.telefono || null,
       estado: formData.estado,
       municipio: formData.municipio,
       parroquia: formData.parroquia,

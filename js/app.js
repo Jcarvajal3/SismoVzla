@@ -154,12 +154,14 @@ function setupFormSubmission() {
     const locationData = getLocationData();
     const tipoInmueble = document.getElementById('select-tipo').value;
     const descripcion = document.getElementById('textarea-descripcion').value;
+    const telefono = document.getElementById('input-telefono') ? document.getElementById('input-telefono').value.trim() : '';
 
     const formData = {
       ...locationData,
       tipo: tipoInmueble,
       piso: null,
-      descripcion: descripcion
+      descripcion: descripcion,
+      telefono: telefono
     };
 
     // Validar requeridos del formulario

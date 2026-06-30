@@ -143,6 +143,16 @@
               <input type="text" id="input-edificio" placeholder="Ej: Residencias Las Palmas, Torre A" required aria-required="true">
             </div>
             <div class="form-group full-width">
+              <label for="input-telefono">
+                📞 Teléfono de contacto
+                <span style="font-weight:400; color:var(--text-muted); font-size:var(--font-size-xs); margin-left:4px;">(Opcional)</span>
+              </label>
+              <input type="tel" id="input-telefono" placeholder="Ej: 0412-123-4567" autocomplete="tel" aria-describedby="telefono-help">
+              <span id="telefono-help" class="field-hint">
+                Se usará únicamente para contactarle y brindarle asesorías sobre los daños del inmueble en el futuro.
+              </span>
+            </div>
+            <div class="form-group full-width">
               <label for="textarea-descripcion">Describe el daño que observas</label>
               <textarea id="textarea-descripcion" rows="3" placeholder="Ej: Grieta diagonal en la columna del pasillo, se escucha crujido al caminar..."></textarea>
             </div>

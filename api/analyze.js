@@ -350,6 +350,7 @@ IMPORTANTE: Si las imagenes no corresponden a danos estructurales o danos en inm
       tipo_inmueble: buildingInfo.tipo_inmueble,
       piso: buildingInfo.piso || null,
       descripcion_usuario: buildingInfo.descripcion_usuario || null,
+      telefono_contacto: buildingInfo.telefono_contacto || null,
       image_urls: imageUrls,
       ai_diagnosis: diagnosis,
       status: 'analyzed',
