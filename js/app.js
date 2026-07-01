@@ -139,9 +139,7 @@ function setupFormSubmission() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Fix #25: Deshabilitar el botón de submit inmediatamente para prevenir doble-submit
     const submitBtn = document.getElementById('btn-analizar');
-    if (submitBtn) submitBtn.disabled = true;
     const images = getImages();
 
     // Validar imágenes obligatorias
@@ -150,7 +148,7 @@ function setupFormSubmission() {
       
       // Hacer scroll suave al área de carga de fotos
       document.getElementById('step-fotos').scrollIntoView({ behavior: 'smooth' });
-      return;
+      return; // botón nunca se bloqueó → no hay problema
     }
 
     // Recopilar datos de ubicación e inmueble
@@ -171,8 +169,12 @@ function setupFormSubmission() {
     const validation = validateForm(formData);
     if (!validation.valid) {
       validation.errors.forEach(err => showToast(err, 'warning'));
-      return;
+      return; // botón nunca se bloqueó → no hay problema
     }
+
+    // Fix #25: Deshabilitar el botón solo DESPUÉS de que todas las validaciones pasaron
+    // De esta forma, el bloque finally siempre lo re-habilita correctamente.
+    if (submitBtn) submitBtn.disabled = true;
 
     // === NUEVO FLUJO: Ocultar form/hero → Mostrar pantalla de carga ===
     const hero = document.getElementById('hero-evaluar');
