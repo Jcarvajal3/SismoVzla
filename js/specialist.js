@@ -55,19 +55,21 @@ function initSpecialist() {
 }
 
 /**
- * Verifica si hay una sesión guardada en localStorage y auto-autentica.
+ * Verifica si hay una sesión guardada en localStorage.
+ * NOTA: El access_code no se persiste por seguridad, por lo que al refrescar
+ * la página no es posible restaurar una sesión autenticada. Se limpia el
+ * localStorage y se deja al especialista en la pantalla de login.
  */
 function checkActiveSession() {
   const savedSession = localStorage.getItem('specialist_session');
   if (savedSession) {
-    try {
-      specialistState.session = JSON.parse(savedSession);
-      showDashboard();
-    } catch (e) {
-      localStorage.removeItem('specialist_session');
-    }
+    // El _accessCode (Bearer token) vive solo en memoria y se pierde al refrescar.
+    // Intentar restaurar la sesión sin él causaría un 401 en cada refresh.
+    // La solución correcta y segura es limpiar y pedir credenciales de nuevo.
+    localStorage.removeItem('specialist_session');
   }
 }
+
 
 /**
  * Event handler para el login de especialista.
