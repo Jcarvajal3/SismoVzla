@@ -29,12 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
  * Orquesta la inicialización de todos los módulos y configuraciones.
  */
 function initApp() {
-  console.log('🇻🇪 Inicializando Análisis de Estructura...');
+  console.log('🇾🇪 Inicializando Análisis de Estructura...');
 
-  // Inicializar módulos secundarios
-  initLocation();
-  initCamera();
-  initSpecialist();
+  // Fix #26: Cada módulo se inicializa de forma independiente con su propio try/catch.
+  // Un error en uno no bloquea la inicialización de los demás.
+  try { initLocation(); } catch (e) { console.error('[initApp] Error en initLocation:', e); }
+  try { initCamera();   } catch (e) { console.error('[initApp] Error en initCamera:', e); }
+  try { initSpecialist(); } catch (e) { console.error('[initApp] Error en initSpecialist:', e); }
 
   // Configurar orquestadores del módulo principal
   setupRouter();
@@ -47,18 +48,18 @@ function initApp() {
  * Enrutador SPA simple basado en el Hash (hashchange).
  */
 function setupRouter() {
+  // Fix #49: Cachear queries DOM en lugar de re-ejecutar querySelectorAll en cada cambio de hash
+  const allSections = Array.from(document.querySelectorAll('.page-section'));
+  const allNavLinks = Array.from(document.querySelectorAll('#main-nav .nav-link'));
+
   const handleRouting = async () => {
     const hash = window.location.hash || '#evaluar';
     
-    // Ocultar todas las secciones
-    document.querySelectorAll('.page-section').forEach(sec => {
-      sec.classList.remove('active');
-    });
+    // Ocultar todas las secciones (Fix #49: usando cache)
+    allSections.forEach(sec => { sec.classList.remove('active'); });
 
     // Desactivar todos los links de navegación del header
-    document.querySelectorAll('#main-nav .nav-link').forEach(link => {
-      link.classList.remove('active');
-    });
+    allNavLinks.forEach(link => { link.classList.remove('active'); link.removeAttribute('aria-current'); });
 
     // 1. Manejo del Caso de Detalle de Reporte Público (/#reporte/UUID)
     if (hash.startsWith('#reporte/')) {
@@ -102,7 +103,7 @@ function setupRouter() {
 
     // 2. Manejo de Secciones Estándar
     const sectionName = hash.substring(1);
-    const validSections = ['evaluar', 'especialistas', 'info'];
+    const validSections = ['evaluar', 'especialistas', 'info', 'mapa'];
     const activeSection = validSections.includes(sectionName) ? sectionName : 'evaluar';
 
     // Mostrar sección correspondiente
@@ -138,7 +139,9 @@ function setupFormSubmission() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Fix #25: Deshabilitar el botón de submit inmediatamente para prevenir doble-submit
     const submitBtn = document.getElementById('btn-analizar');
+    if (submitBtn) submitBtn.disabled = true;
     const images = getImages();
 
     // Validar imágenes obligatorias
@@ -200,7 +203,8 @@ function setupFormSubmission() {
         displayResults(res.diagnosis, res.reportId, 'resultado-analisis');
 
         // Limpiar el estado de fotos y inputs del formulario
-        clearImages();
+        // Fix #71: Patrón defensivo consistente para clearImages()
+        if (typeof clearImages === 'function') clearImages();
         form.reset();
 
         // Limpiar las coordenadas ocultas y estado GPS
@@ -210,6 +214,14 @@ function setupFormSubmission() {
         if (geoStatus) geoStatus.hidden = true;
 
         showToast('Diagnóstico generado con éxito.', 'success');
+      } else {
+        // La API respondió pero sin éxito (ej: { success: false, error: '...' })
+        // Restaurar UI para que el usuario pueda reintentar
+        const errorMsg = (res && res.error) || 'No se pudo completar el análisis. Intente de nuevo.';
+        if (loadingOverlay) loadingOverlay.hidden = true;
+        form.hidden = false;
+        if (hero) hero.removeAttribute('hidden');
+        showToast(errorMsg, 'error');
       }
     } catch (error) {
       console.error('Error al procesar la evaluación:', error);
@@ -219,12 +231,16 @@ function setupFormSubmission() {
       if (loadingOverlay) loadingOverlay.hidden = true;
       form.hidden = false;
       if (hero) hero.removeAttribute('hidden');
+    } finally {
+      // Siempre re-habilitar el botón al terminar (Fix #25)
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 }
 
 /**
- * Reinicia la vista al formulario para hacer un nuevo análisis.
+ * Reinicia la vista al formulario para permitir un nuevo análisis.
+ * Oculta los resultados, restaura el formulario y limpia el estado de fotos y GPS.
  */
 function handleNewAnalysis() {
   const form = document.getElementById('form-evaluacion');
@@ -294,7 +310,9 @@ function setupSOSButton() {
 }
 
 /**
- * Genera dinámicamente y configura el checklist de seguridad interactivo ATC-20.
+ * Genera dinámicamente el checklist de inspección visual rápida ATC-20.
+ * Crea los items de checkbox en el contenedor #checklist-items y
+ * registra listeners para el estado visual de cada item.
  */
 function setupChecklist() {
   const container = document.getElementById('checklist-items');

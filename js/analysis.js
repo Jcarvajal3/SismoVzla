@@ -45,19 +45,10 @@ async function submitAnalysis(images, formData) {
 }
 
 /**
- * Retorna la clase CSS correspondiente al nivel de riesgo.
- * @param {string} nivel - Nivel de riesgo ('BAJO', 'MEDIO', 'ALTO', 'CRITICO').
- * @returns {string} Clase CSS.
+ * Fix #74: getRiskColor fue movida a utils.js (cargado antes en index.html).
+ * La definición local queda eliminada para evitar duplicación.
+ * utils.js la exporta como función global y está disponible aquí sin cambios.
  */
-function getRiskColor(nivel) {
-  const mapping = {
-    'BAJO': 'bajo',
-    'MEDIO': 'medio',
-    'ALTO': 'alto',
-    'CRITICO': 'critico'
-  };
-  return mapping[nivel?.toUpperCase()] || 'bajo';
-}
 
 /**
  * Renderiza los resultados del diagnóstico en la UI.
@@ -292,7 +283,7 @@ function buildResultHTML(diagnosis, reportId, reviews = []) {
     ` : ''}
 
     <div class="disclaimer-box">
-      <p>⚠️ <strong>Aviso Importante (Disclaimer):</strong> Este diagnóstico fue generado automáticamente por <strong>Inteligencia Artificial (Gemini)</strong> usando los criterios de la metodología <strong>“Evaluación Rápida de Daños en Edificaciones”</strong> (ANIH, Boletín Nº 61, 2023) desarrollada por FUNVISIS. El análisis con IA posee carácter únicamente informativo y <strong>no reemplaza</strong> bajo ninguna circunstancia una inspección física realizada por ingenieros civiles, bomberos o personal calificado de Protección Civil.</p>
+      <p>⚠️ <strong>Aviso:</strong> Esta lista es una herramienta de autoevaluación preliminar y no sustituye la inspección realizada por ingenieros civiles, arquitectos o personal de Protección Civil.</p>
     </div>
 
     <div class="result-actions">
@@ -337,13 +328,5 @@ async function handleShareReport(reportId, diagnosis) {
   }
 }
 
-/**
- * Notificación/simulación al solicitar revisión técnica presencial.
- */
-function requestSpecialistAlert() {
-  showToast(
-    'Tu reporte está registrado en el sistema. Los ingenieros y especialistas de guardia podrán visualizarlo en el panel y emitir un diagnóstico validado.',
-    'success',
-    6000
-  );
-}
+// Fix #66: requestSpecialistAlert() eliminada — función sin callers en ningún módulo del proyecto.
+// Si se requiere en el futuro para un flujo de notificaciones, reimplementar aquí.

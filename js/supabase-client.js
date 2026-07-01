@@ -30,19 +30,14 @@ async function _initSupabaseClient() {
     const config = await res.json();
     
     if (!config.supabaseUrl || !config.supabaseAnonKey) {
-      console.warn('Supabase URL o Anon Key ausentes en /api/config. Intentando cargar variables globales.');
-      const url = config.supabaseUrl || 'https://xlylodcinromqqjjupph.supabase.co';
-      const key = config.supabaseAnonKey || window.SUPABASE_ANON_KEY;
-      
-      if (!key) {
-        throw new Error('Supabase Anon Key no definida. Asegúrese de configurar las variables de entorno.');
-      }
-      
-      supabaseClient = window.supabase.createClient(url, key);
-    } else {
-      supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      // Fix #80: Ya no hay fallback con URL hardcodeada.
+      // Si /api/config no retorna las credenciales, es un error de configuración del servidor.
+      throw new Error(
+        'Supabase URL o Anon Key ausentes en /api/config. Verifique las variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY en el servidor.'
+      );
     }
-    
+
+    supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
     return supabaseClient;
   } catch (error) {
     console.error('Error inicializando Supabase Client:', error);

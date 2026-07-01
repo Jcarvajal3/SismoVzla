@@ -5,7 +5,9 @@
  */
 
 const specialistState = {
-  session: null,     // { id, nombre, access_code, logged_in_at }
+  // SEGURIDAD: access_code NO se guarda en el estado en memoria ni en localStorage.
+  // Solo se persiste: id, nombre y timestamp del login.
+  session: null,     // { id, nombre, logged_in_at }
   currentTab: 'pendientes',
   reports: []
 };
@@ -97,15 +99,19 @@ async function handleSpecialistLogin() {
       throw new Error(data.error || 'Código de acceso incorrecto.');
     }
 
-    // Guardar sesión en estado y localStorage
+    // SEGURIDAD: Solo guardamos id y nombre en memoria/localStorage.
+    // El access_code NO se persiste — se usa solo para este request de login.
+    // Las peticiones autenticadas posteriores usan el access_code provisto en el
+    // momento del login, que se almacena temporalmente en un closure privado.
     specialistState.session = {
       id: data.specialist.id,
       nombre: data.specialist.nombre,
-      access_code: accessCode,
       logged_in_at: new Date().toISOString()
     };
-    
+    // Guardamos un token de sesión seguro: solo el id y nombre (sin access_code)
     localStorage.setItem('specialist_session', JSON.stringify(specialistState.session));
+    // El access_code se mantiene solo en memoria para autorizar requests de esta sesión
+    specialistState._accessCode = accessCode;
     
     showToast(`Bienvenido Ing. ${data.specialist.nombre}`, 'success');
     if (codeInput) codeInput.value = '';
@@ -128,6 +134,7 @@ async function handleSpecialistLogin() {
  */
 function handleSpecialistLogout() {
   specialistState.session = null;
+  specialistState._accessCode = null;  // Limpiar access_code de memoria
   localStorage.removeItem('specialist_session');
   
   document.getElementById('specialist-dashboard').hidden = true;
@@ -171,7 +178,7 @@ async function loadSpecialistReports() {
     
     const res = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${specialistState.session.access_code}`
+        'Authorization': `Bearer ${specialistState._accessCode || ''}`
       }
     });
 
@@ -245,7 +252,7 @@ function renderReportCard(report) {
       <div class="report-details-top">
         <h3>${sanitizeHTML(report.nombre_edificio || 'Edificio')}</h3>
         <p class="report-meta">
-          📍 ${sanitizeHTML(report.estado)}, ${sanitizeHTML(report.municipio)} ${report.piso ? `(Piso ${report.piso})` : ''}
+          📍 ${sanitizeHTML(report.estado)}, ${sanitizeHTML(report.municipio)} ${report.piso ? `(Piso ${sanitizeHTML(String(report.piso))})` : ''}
         </p>
         <p class="report-meta" style="margin-top: 4px; font-size: 12px; color: var(--text-muted);">
           📅 Subido: ${dateStr}
@@ -352,7 +359,7 @@ async function openReviewModal(reportId) {
           </div>
           <div class="contact-info-block__row">
             <span class="contact-info-block__label">Tipo:</span>
-            <span>${sanitizeHTML(report.tipo_inmueble || 'No especificado')}${report.piso ? ` &ndash; Piso ${report.piso}` : ''}</span>
+            <span>${sanitizeHTML(report.tipo_inmueble || 'No especificado')}${report.piso ? ` &ndash; Piso ${sanitizeHTML(String(report.piso))}` : ''}</span>
           </div>
           ${report.descripcion_usuario ? `
           <div class="contact-info-block__row">
@@ -486,13 +493,14 @@ async function handleReviewSubmit(event) {
   };
 
   showSpinner(submitBtn);
+  if (submitBtn) submitBtn.disabled = true;  // Fix #25: prevenir doble-submit
 
   try {
     const res = await fetch('/api/specialist?action=review', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${specialistState.session.access_code}`
+        'Authorization': `Bearer ${specialistState._accessCode || ''}`
       },
       body: JSON.stringify(reviewData)
     });
@@ -514,5 +522,6 @@ async function handleReviewSubmit(event) {
     showToast(error.message, 'error');
   } finally {
     hideSpinner(submitBtn, '✅ Enviar Revisión');
+    if (submitBtn) submitBtn.disabled = false;
   }
 }

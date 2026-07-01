@@ -1,5 +1,31 @@
 node_modules/
+
+# Variables de entorno — NUNCA commitear
 .env
+.env.local
+.env.production
+.env.*.local
+
+# Vercel
 .vercel/
 
-.vercel
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Supabase temporales — pueden contener info sensible
+supabase/.temp/
+supabase/.branches/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor / IDEs
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.gemini/

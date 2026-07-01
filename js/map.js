@@ -74,8 +74,8 @@ function setupMapFilters() {
 }
 
 /**
- * Lee los filtros seleccionados en la UI.
- * @returns {Object} Filtros formateados.
+ * Retorna los filtros activos en la UI del mapa (chip de riesgo y estado seleccionado).
+ * @returns {{ riesgo: string, estado: string }} Filtros activos actuales.
  */
 function getActiveFilters() {
   const activeChip = document.querySelector('#filter-riesgo .chip.active');
@@ -149,12 +149,13 @@ function createMarker(report) {
 
   const marker = L.marker([lat, lng], { icon: icon });
 
-  // Popups personalizados para dar una excelente UX
+  // SEGURIDAD Fix #18: Se elimina el onclick inline con report.id interpolado (vector XSS).
+  // Se usa addEventListener para vincular la navegación de forma segura.
   const popupHtml = `
     <div class="marker-popup">
       <strong>${sanitizeHTML(report.nombre_edificio || 'Edificio Reportado')}</strong>
       <div style="margin: 4px 0 8px 0;">
-        <span class="badge badge-${getRiskColor(report.nivel_riesgo)}">${report.nivel_riesgo}</span>
+        <span class="badge badge-${getRiskColor(report.nivel_riesgo)}">${sanitizeHTML(report.nivel_riesgo)}</span>
       </div>
       <p style="margin-bottom:4px; font-size:11px; color:var(--text-secondary);">
         📍 ${sanitizeHTML(report.estado)}, ${sanitizeHTML(report.municipio)}<br>
@@ -163,7 +164,7 @@ function createMarker(report) {
       <small style="color:var(--text-muted); display:block; margin-top:6px;">
         📅 ${dateStr}
       </small>
-      <button onclick="routerNavigateToReport('${report.id}')" class="btn btn-secondary btn-small" 
+      <button class="btn btn-secondary btn-small marker-detail-btn"
               style="width: 100%; margin-top: 10px; padding: 4px 0;">
         🔎 Ver detalles
       </button>
@@ -173,6 +174,16 @@ function createMarker(report) {
   marker.bindPopup(popupHtml, {
     maxWidth: 240,
     minWidth: 180
+  });
+
+  // Vincular el evento DESPUÉS de abrir el popup para tener acceso al DOM del popup
+  marker.on('popupopen', () => {
+    const btn = marker.getPopup().getElement()?.querySelector('.marker-detail-btn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        window.location.hash = `#reporte/${report.id}`;
+      });
+    }
   });
 
   return marker;

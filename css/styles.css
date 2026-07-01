@@ -2,8 +2,9 @@
    EVALUACIÓN SÍSMICA VENEZUELA - LIGHT THEME DESIGN SYSTEM
    ========================================================================== */
 
-/* Google Font: Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Fix #52: @import de Google Fonts eliminado — render-blocking y redundante.
+   La fuente Inter se carga desde index.html via <link rel="stylesheet"> en el <head>.
+   Ver: https://web.dev/defer-non-critical-css/ */
 
 :root {
   /* ── Fondos ───────────────────────────────────────────────────────────── */
@@ -15,7 +16,7 @@
   /* ── Texto ────────────────────────────────────────────────────────────── */
   --text-primary:   #1e293b;   /* Texto principal                   */
   --text-secondary: #475569;   /* Texto secundario                  */
-  --text-muted:     #94a3b8;   /* Texto tenue / placeholders        */
+  --text-muted:     #6b7280;   /* Texto tenue / placeholders — WCAG AA sobre blanco */
   --text-inverse:   #ffffff;   /* Texto sobre fondos de color       */
 
   /* ── Bordes ───────────────────────────────────────────────────────────── */
@@ -25,6 +26,7 @@
 
   /* ── Acentos de marca — Quarto Brand ─────────────────────────────────── */
   --accent-primary:       #00BF96;   /* Quarto teal principal          */
+  --accent-secondary:     #00D4AA;   /* Teal secundario (gradientes)   */
   --accent-primary-light: #e0faf4;   /* Tinte claro del acento         */
   --accent-primary-hover: #00a37f;   /* Hover del acento               */
   --accent-primary-glow:  rgba(0, 191, 150, 0.20);
@@ -413,6 +415,7 @@ h2 {
   cursor: pointer;
   transition: all var(--t-fast);
   white-space: nowrap;
+  /* Fix #36/#37: outline:none reemplazado por :focus-visible para accesibilidad de teclado */
   outline: none;
   letter-spacing: 0.01em;
   min-height: 44px; /* Touch target mínimo (iOS/Android guidelines) */
@@ -580,6 +583,7 @@ textarea {
   font-size: var(--font-size-sm);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
+  /* Fix #36: Inputs también usan :focus-visible; outline eliminado del base */
   outline: none;
   transition: border-color var(--t-fast), box-shadow var(--t-fast), background-color var(--t-fast);
   width: 100%;
@@ -1108,9 +1112,9 @@ textarea {
 /* ── Disclaimer box ─────────────────────────────────────────────────────── */
 .disclaimer-box {
   font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-light);
+  color: var(--risk-medio);
+  background-color: var(--risk-medio-light);
+  border: 1.5px solid var(--risk-medio-border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
   margin-top: var(--space-6);
@@ -1814,6 +1818,7 @@ summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* Fix #37: summary usaba outline:none sin sustituto de teclado */
   outline: none;
   user-select: none;
   color: var(--text-primary);
@@ -2001,6 +2006,7 @@ details[open] summary::after {
   z-index: 999;
   animation: pulse-glow 2s infinite;
   transition: transform var(--t-fast);
+  /* Fix #37: .btn-sos usaba outline:none sin sustituto */
   outline: none;
   line-height: 1;
 }
@@ -2209,12 +2215,7 @@ details[open] summary::after {
 /* ==========================================================================
    DIVIDERS & HELPERS
    ========================================================================== */
-.divider {
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-light);
-  margin: var(--space-6) 0;
-}
+/* Fix #68: .divider eliminada — clase CSS sin uso en HTML ni JS */
 
 /* Estado vacío */
 .empty-state {
@@ -2269,10 +2270,7 @@ details[open] summary::after {
     gap: var(--space-1);
   }
 
-  .flag-icon {
-    width: 22px;
-    height: 15px;
-  }
+  /* Fix #68: .flag-icon eliminada — clase CSS sin uso en HTML ni JS */
 
   .nav-link {
     padding: var(--space-2);
@@ -2360,4 +2358,49 @@ details[open] summary::after {
   .btn-sos {
     animation: none;
   }
+}
+
+/* ==========================================================================
+   Fix #36 - ACCESIBILIDAD: Estilos :focus-visible globales
+   :focus-visible solo se activa con navegación por teclado (Tab/Flechas),
+   no con mouse/touch — solución ideal para eliminar outline:none sin
+   sacrificar la experiencia visual de ratones.
+   ========================================================================== */
+
+/* Focus ring global para cualquier elemento interactivo */
+:focus-visible {
+  outline: 3px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--radius-sm);
+}
+
+/* Botones — focus ring de teal con sombra */
+.btn:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--accent-primary) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px var(--accent-primary-glow) !important;
+}
+
+/* Inputs y selects */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none !important;          /* El browser default outline queda tapado por box-shadow */
+  box-shadow: 0 0 0 3px var(--accent-primary-glow) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Details/summary */
+summary:focus-visible {
+  outline: 3px solid var(--accent-primary) !important;
+  outline-offset: -3px !important;
+  background-color: var(--bg-subtle-hover);
+}
+
+/* Botón SOS */
+.btn-sos:focus-visible {
+  outline: 3px solid #ffffff !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.5) !important;
 }

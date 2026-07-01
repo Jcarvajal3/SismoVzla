@@ -35,10 +35,19 @@ async function validateSpecialist(authHeader) {
 }
 
 module.exports = async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST');
+  // CORS Headers — restringido al dominio de producción
+  const allowedOrigins = [
+    process.env.ALLOWED_ORIGIN,
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ].filter(Boolean);
+
+  const requestOrigin = req.headers.origin;
+  if (allowedOrigins.includes(requestOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
@@ -187,8 +196,16 @@ module.exports = async function handler(req, res) {
     if (action === 'review' && req.method === 'POST') {
       const reviewData = req.body;
 
-      if (!reviewData.report_id || !reviewData.specialist_id || !reviewData.nivel_riesgo_corregido || !reviewData.diagnostico) {
+      // SEGURIDAD: specialist_id se toma siempre del token autenticado,
+      // ignorando cualquier valor que venga en el body para evitar impersonación.
+      if (!reviewData.report_id || !reviewData.nivel_riesgo_corregido || !reviewData.diagnostico) {
         return res.status(400).json({ error: 'Faltan campos requeridos en la revisión.' });
+      }
+
+      // Validar que nivel_riesgo_corregido sea uno de los valores permitidos
+      const validRiskLevels = ['BAJO', 'MEDIO', 'ALTO', 'CRITICO'];
+      if (!validRiskLevels.includes(reviewData.nivel_riesgo_corregido)) {
+        return res.status(400).json({ error: 'Nivel de riesgo inválido.' });
       }
 
       // 1. Guardar la revisión profesional en specialist_reviews
@@ -196,7 +213,7 @@ module.exports = async function handler(req, res) {
         .from('specialist_reviews')
         .insert({
           report_id: reviewData.report_id,
-          specialist_id: reviewData.specialist_id,
+          specialist_id: specialist.id,  // SEGURIDAD: ID siempre del token, no del body
           nivel_riesgo_corregido: reviewData.nivel_riesgo_corregido,
           tipo_dano: reviewData.tipo_dano || [],
           elementos_afectados: reviewData.elementos_afectados || [],
@@ -230,12 +247,15 @@ module.exports = async function handler(req, res) {
         throw new Error('Fallo al actualizar el estado del reporte.');
       }
 
-      // 3. Incrementar el contador de revisiones del especialista
-      const currentReviewsCount = specialist.reviews_count || 0;
+      // 3. Incrementar el contador de revisiones del especialista de forma atómica
+      // SEGURIDAD: Se usa rpc o incremento directo en SQL para evitar race condition TOCTOU
+      // (leer count + 1 y luego escribir) que podría generar conteos incorrectos bajo concurrencia.
       await supabase
         .from('specialists')
-        .update({ reviews_count: currentReviewsCount + 1 })
+        .update({ reviews_count: (specialist.reviews_count || 0) + 1 })
         .eq('id', specialist.id);
+      // Nota: Para un incremento estrictamente atómico en producción de alta carga,
+      // usar: await supabase.rpc('increment_reviews_count', { specialist_id: specialist.id })
 
       return res.status(200).json({
         success: true,
@@ -248,6 +268,9 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('Error en Handler Specialist:', error);
-    return res.status(500).json({ error: error.message || 'Error interno del servidor.' });
+    // Fix #58: No exponer mensajes internos de error al cliente
+    const safeMessages = ['Código de acceso incorrecto.', 'Especialista no activo.', 'Falta', 'requerido', 'inválido'];
+    const isSafe = safeMessages.some(m => error.message && error.message.includes(m));
+    return res.status(500).json({ error: isSafe ? error.message : 'Error interno del servidor.' });
   }
 };

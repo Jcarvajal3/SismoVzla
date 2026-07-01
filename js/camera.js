@@ -75,9 +75,21 @@ async function handleImageSelect(event) {
     compressionInfo.hidden = false;
   }
 
+  // Límite máximo por archivo: 15MB (previene crashes del browser tab)
+  const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
+  // Extensiones permitidas adicionales al filtro por MIME type
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+
   for (const file of filesToProcess) {
     if (!file.type.startsWith('image/')) {
-      showToast(`El archivo ${file.name} no es una imagen válida.`, 'error');
+      showToast(`El archivo "${sanitizeHTML(file.name)}" no es una imagen válida.`, 'error');
+      continue;
+    }
+
+    // Fix #21: Validar tamaño de archivo antes de intentar comprimir
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      showToast(`La imagen "${sanitizeHTML(file.name)}" (${fileSizeMB} MB) es demasiado grande. Máximo 15 MB.`, 'error');
       continue;
     }
 
@@ -86,7 +98,7 @@ async function handleImageSelect(event) {
       cameraState.images.push(result);
     } catch (error) {
       console.error('Error comprimiendo imagen:', error);
-      showToast(`Error al procesar la imagen ${file.name}.`, 'error');
+      showToast(`Error al procesar la imagen "${sanitizeHTML(file.name)}".`, 'error');
     }
   }
 

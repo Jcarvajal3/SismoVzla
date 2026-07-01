@@ -155,8 +155,12 @@ END
 $$;
 
 -- Step 7: Insert test specialists
-INSERT INTO specialists (access_code, nombre, especialidad, colegio_profesional, numero_colegiado)
+-- SEGURIDAD: Las credenciales de demo se insertan con is_active=FALSE para prevenir
+-- acceso no autorizado en producción. Para usar en desarrollo local, activar manualmente:
+--   UPDATE specialists SET is_active = TRUE WHERE access_code IN ('DEMO-SPEC-2026', 'SPEC-ADMIN-001');
+-- En producción, crear especialistas reales con códigos seguros y eliminar estos registros.
+INSERT INTO specialists (access_code, nombre, especialidad, colegio_profesional, numero_colegiado, is_active)
 VALUES
-  ('DEMO-SPEC-2026', 'Ing. Demo (Prueba)', 'ingeniero_estructural', 'CIV', '000000'),
-  ('SPEC-ADMIN-001', 'Administrador', 'ingeniero_civil', 'CIV', '000001')
+  ('DEMO-SPEC-2026', 'Ing. Demo (Prueba)', 'ingeniero_estructural', 'CIV', '000000', FALSE),
+  ('SPEC-ADMIN-001', 'Administrador', 'ingeniero_civil', 'CIV', '000001', FALSE)
 ON CONFLICT (access_code) DO NOTHING;

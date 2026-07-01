@@ -19,9 +19,16 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Devolver de forma segura la URL y la Anon Key pública del proyecto
+  // Fix #80: URL de Supabase ya no tiene fallback hardcodeado.
+  // Si la variable de entorno no está definida, el servidor lo reporta explícitamente
+  // en lugar de silenciosamente usar una URL que podría ser incorrecta en producción.
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error('CONFIG: SUPABASE_URL o SUPABASE_ANON_KEY no están definidas.');
+    return res.status(503).json({ error: 'Servidor no configurado correctamente. Contacte al administrador.' });
+  }
+
   return res.status(200).json({
-    supabaseUrl: process.env.SUPABASE_URL || 'https://xlylodcinromqqjjupph.supabase.co',
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || ''
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY
   });
 };

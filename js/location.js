@@ -12,9 +12,12 @@ const ESTADOS_VENEZUELA = [
   'Táchira', 'Trujillo', 'Yaracuy', 'Zulia'
 ];
 
+// Fix #77: Consistencia de nombres de estado.
+// ESTADOS_VENEZUELA usa 'Distrito Capital' y ESTADOS_AFECTADOS ahora también,
+// para que el geocoder pueda hacer match correcto sin conversiones manuales.
 const ESTADOS_AFECTADOS = [
   'Aragua',
-  'Caracas',
+  'Distrito Capital', // era 'Caracas' — inconsistente con ESTADOS_VENEZUELA
   'Falcón',
   'La Guaira',
   'Miranda',
@@ -141,10 +144,10 @@ async function handleGeolocationRequest() {
         const inputEstadoOtro = document.getElementById('input-estado-otro');
 
         if (estadoEl) {
-          // Map "Distrito Capital" to "Caracas"
+          // Fix #77: Normalizar 'Caracas' (ciudad) a 'Distrito Capital' (estado) para match con ESTADOS_AFECTADOS
           let targetEstado = address.estado;
-          if (targetEstado === 'Distrito Capital') {
-            targetEstado = 'Caracas';
+          if (targetEstado === 'Caracas') {
+            targetEstado = 'Distrito Capital';
           }
 
           if (ESTADOS_AFECTADOS.includes(targetEstado)) {

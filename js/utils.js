@@ -75,19 +75,8 @@ function showLoading(containerId, linesCount = 3) {
   container.removeAttribute('hidden');
 }
 
-/**
- * Remueve el skeleton loading y restaura el contenido original.
- * @param {string} containerId - ID del contenedor HTML.
- */
-function hideLoading(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  if (container.dataset.originalHtml) {
-    container.innerHTML = container.dataset.originalHtml;
-    delete container.dataset.originalHtml;
-  }
-}
+// Fix #65: hideLoading() eliminada — nunca se llamaba en ningún módulo del proyecto.
+// Si se necesita en el futuro, reimplementar aquí con JSDoc.
 
 /**
  * Reemplaza el texto del botón con un spinner y lo deshabilita.
@@ -144,21 +133,9 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-/**
- * Genera un UUID v4 básico en el cliente.
- * @returns {string} UUID aleatorio.
- */
-function generateUUID() {
-  // UUID v4 compatible con navegadores viejos y entornos sin crypto.randomUUID
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+// Fix #63: generateUUID() eliminada — nunca se llamaba en el proyecto.
+// El backend usa crypto.randomUUID() directamente (Node.js ≥ 14.17).
+// Si se necesita en el cliente en el futuro, reimplementar aquí.
 
 /**
  * Escapa HTML para evitar ataques XSS al inyectar cadenas de texto en el DOM.
@@ -179,20 +156,25 @@ function sanitizeHTML(str) {
   });
 }
 
+// Fix #64: debounce() eliminada — nunca se llamaba en el proyecto.
+// Si se incorpora un buscador o filtrado en tiempo real, reimplementar aquí.
+
 /**
- * Limita la frecuencia de ejecución de una función (Debounce).
- * @param {Function} fn - Función a ejecutar.
- * @param {number} delay - Retraso en milisegundos.
- * @returns {Function} Función debounced.
+ * Fix #74: getRiskColor movida desde analysis.js a utils.js.
+ * Era usada en analysis.js, map.js y specialist.js — pertenece a las utilidades compartidas.
+ *
+ * Retorna la clase CSS correspondiente al nivel de riesgo.
+ * @param {string} nivel - Nivel de riesgo ('BAJO', 'MEDIO', 'ALTO', 'CRITICO').
+ * @returns {string} Clase CSS (ej: 'bajo', 'medio', 'alto', 'critico').
  */
-function debounce(fn, delay) {
-  let timeoutId;
-  return function(...args) {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      fn.apply(this, args);
-    }, delay);
+function getRiskColor(nivel) {
+  const mapping = {
+    'BAJO':    'bajo',
+    'MEDIO':   'medio',
+    'ALTO':    'alto',
+    'CRITICO': 'critico'
   };
+  return mapping[nivel?.toUpperCase()] || 'bajo';
 }
 
 /**
@@ -214,6 +196,16 @@ function validateForm(formData) {
   }
   if (!formData.tipo || formData.tipo.trim() === '') {
     errors.push('El tipo de inmueble es requerido.');
+  }
+
+  // Fix #24: Validar formato de teléfono venezolano si se proporcionó
+  // Acepta: 04XX-XXXXXXX, 0212-XXXXXXX (con o sin guiones/espacios)
+  if (formData.telefono && formData.telefono.trim() !== '') {
+    const phoneDigits = formData.telefono.replace(/[\s\-().]/g, ''); // eliminar separadores
+    const vePhoneRegex = /^(0[24]\d{9}|58[24]\d{9})$/;
+    if (!vePhoneRegex.test(phoneDigits)) {
+      errors.push('Número de teléfono inválido. Use formato venezolano (ej: 0414-123-4567).');
+    }
   }
 
   return {
