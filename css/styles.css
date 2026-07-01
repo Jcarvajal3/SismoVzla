@@ -328,24 +328,25 @@ body {
 }
 
 .hero-disclaimer {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+  display: inline-block;
   font-size: var(--font-size-xs);
   color: var(--risk-medio);
   background-color: var(--risk-medio-light);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
   border: 1px solid var(--risk-medio-border);
-  font-weight: 600;
+  font-weight: 500;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.5;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (min-width: 480px) {
   .hero-disclaimer {
     font-size: var(--font-size-sm);
-    padding: var(--space-2) var(--space-4);
+    padding: var(--space-3) var(--space-5);
   }
 }
 
